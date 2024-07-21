@@ -1,8 +1,8 @@
-#include "ISA/riscv32/instruction.h"
+#include "ISA/riscv32/Instruction.h"
 
 #include <cassert>
 
-#include "ISA/riscv32/register.h"
+#include "ISA/riscv32/Register.h"
 #include "Memory/Memory.h"
 
 Instruction::Instruction(Register &reg, Memory &mem)
@@ -64,7 +64,9 @@ void Instruction::execute(word_t inst)
                                  (extract_bits(inst, 20, 20) << 11) |
                                  (extract_bits(inst, 12, 19) << 12),
                              21);
+    word_t nextPC = reg.getPC() + 4;
     execute();
+    reg.setPC(nextPC);
 }
 
 void Instruction::execute()

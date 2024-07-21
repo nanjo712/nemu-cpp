@@ -1,7 +1,7 @@
 add_library(
     ISA_RISCV32
-    register.cpp
-    instruction.cpp
+    Register.cpp
+    Instruction.cpp
 )
 target_include_directories(
     ISA_RISCV32

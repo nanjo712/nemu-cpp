@@ -1,4 +1,6 @@
-#include "ISA/riscv32/register.h"
+#include "ISA/riscv32/Register.h"
+
+#include <cassert>
 
 const std::string Register::regNames[32] = {
     "zero", "ra", "sp", "gp", "tp",  "t0",  "t1", "t2", "s0", "s1", "a0",
