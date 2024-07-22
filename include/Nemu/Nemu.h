@@ -1,8 +1,17 @@
 #ifndef NEMU_H_
 #define NEMU_H_
 
+#include <memory>
+
+class CPU;
+class Memory;
+class ISA_Wrapper;
 class Nemu
 {
+   public:
+    Nemu();
+    ~Nemu();
+
    private:
     enum State
     {
@@ -12,9 +21,9 @@ class Nemu
         ABORT,
         QUIT
     } state;
-
-   public:
-    Nemu();
+    std::unique_ptr<CPU> cpu;
+    std::unique_ptr<Memory> mem;
+    std::unique_ptr<ISA_Wrapper> isa;
 };
 
 #endif

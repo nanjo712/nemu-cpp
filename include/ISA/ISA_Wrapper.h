@@ -3,6 +3,7 @@
 
 #include "ISA/riscv32/Instruction.h"
 #include "ISA/riscv32/Register.h"
+#include "ISA/riscv32/Reset.h"
 #include "Memory/Memory.h"
 
 class ISA_Wrapper
@@ -12,11 +13,14 @@ class ISA_Wrapper
     ~ISA_Wrapper();
     void execute_one_inst();
     void display_reg();
+    void load_img();
+    void reset();
 
    private:
     Memory& mem;
     Register reg;
-    Instruction inst;
+    Instruction executor;
+    Reset_Handler reset_handler;
 };
 
 #endif  // ISA_H_

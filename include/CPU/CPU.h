@@ -3,15 +3,16 @@
 
 #include <cstdint>
 
+class ISA_Wrapper;
 class CPU
 {
    public:
-    CPU();
+    CPU(ISA_Wrapper& isa);
     ~CPU();
-
     void execute(uint64_t n);
 
    private:
+    ISA_Wrapper& isa;
 };
 
 #endif
