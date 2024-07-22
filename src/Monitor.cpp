@@ -51,7 +51,7 @@ void Monitor::statistics()
     // std::cout << "Instruction count: " << inst_count << std::endl;
     spdlog::info("Instruction count: {}", inst_count);
     if (timer.count() > 0)
-        spdlog::info("Instruction per s: {}", inst_count * 1e6 / timer.count());
+        spdlog::info("Instruction per s: {}", inst_count * 1e9 / timer.count());
     else
         spdlog::info("Simulation time is too short to calculate IPS.");
 }
