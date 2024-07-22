@@ -1,6 +1,7 @@
 #include "Monitor/Monitor.h"
 
 #include <fmt/core.h>
+#include <spdlog/spdlog.h>
 
 #include <chrono>
 #include <iostream>
@@ -19,6 +20,8 @@ Monitor::Monitor()
         *mem, [this](word_t pc) { ebreak_handler(pc); },
         [this](word_t pc) { invaild_inst_handler(pc); });
     cpu = std::make_unique<CPU>(*isa);
+    inst_count = 0;
+    timer = std::chrono::nanoseconds(0);
 }
 
 Monitor::~Monitor() {}
@@ -44,13 +47,13 @@ void Monitor::ebreak_handler(word_t pc)
 
 void Monitor::statistics()
 {
-    std::cout << "Execution time: " << timer.count() << " ms\n";
-    std::cout << "Instruction count: " << inst_count << std::endl;
+    spdlog::info("Execution time: {} ns", timer.count());
+    // std::cout << "Instruction count: " << inst_count << std::endl;
+    spdlog::info("Instruction count: {}", inst_count);
     if (timer.count() > 0)
-        std::cout << "Inst per ms: " << (double)inst_count / timer.count()
-                  << std::endl;
+        spdlog::info("Instruction per s: {}", inst_count * 1e6 / timer.count());
     else
-        std::cout << "Simulation time is too short to calculate inst per ms\n";
+        spdlog::info("Simulation time is too short to calculate IPS.");
 }
 
 void Monitor::execute(uint64_t n)
@@ -82,7 +85,7 @@ void Monitor::execute(uint64_t n)
 
     auto end = std::chrono::steady_clock::now();
 
-    timer = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    timer = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
 
     if (state == State::RUNNING)
     {
@@ -91,6 +94,8 @@ void Monitor::execute(uint64_t n)
     else if (state == State::END || state == State::ABORT)
     {
         statistics();
+        spdlog::info("Halt PC = {0:x}, Halt Return Value = {1:x}", halt_pc,
+                     halt_ret);
     }
     else if (state == State::QUIT)
     {

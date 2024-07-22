@@ -32,7 +32,7 @@ class Monitor
     std::unique_ptr<CPU> cpu;
     std::unique_ptr<Memory> mem;
     std::unique_ptr<ISA_Wrapper> isa;
-    std::chrono::milliseconds timer;
+    std::chrono::nanoseconds timer;
     uint64_t inst_count;
 
     void trap_handler(State s, word_t pc, word_t ret);

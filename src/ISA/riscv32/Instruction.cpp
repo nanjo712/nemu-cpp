@@ -35,9 +35,11 @@ Instruction::Instruction(Register &reg, Memory &mem,
                 continue;
             }
             inst.mask <<= 1;
+            inst.pattern <<= 1;
             if (c != '?')
             {
                 inst.mask |= 1;
+                inst.pattern |= c - '0';
             }
         }
     }
@@ -77,7 +79,7 @@ void Instruction::execute()
 {
     for (auto &inst : instList)
     {
-        if ((inst.mask & this->inst) == this->inst)
+        if ((inst.mask & this->inst) == inst.pattern)
         {
             inst.exec();
             return;

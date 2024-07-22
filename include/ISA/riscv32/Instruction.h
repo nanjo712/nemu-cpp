@@ -39,6 +39,7 @@ class Instruction
         Type type;
         std::function<void()> exec;
         word_t mask;
+        word_t pattern;
     };
     word_t inst, opcode, rd, rs1, rs2, funct3, funct7, immI, immS, immB, immU,
         immJ;

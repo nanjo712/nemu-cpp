@@ -5,6 +5,9 @@ project(nemu-cpp LANGUAGES CXX C ASM)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# USE O2
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
+
 find_package(fmt REQUIRED)
 find_package(spdlog REQUIRED)
 
