@@ -2,6 +2,7 @@
 
 #include <spdlog/spdlog.h>
 
+#include <cassert>
 #include <random>
 
 Memory::Memory()
@@ -24,14 +25,13 @@ constexpr bool Memory::inRange(paddr_t addr) const
     return addr >= lower_bound && addr < upper_bound;
 }
 
-Memory::~Memory() { spdlog::info("Memory destroyed."); }
+Memory::~Memory() { /*spdlog::info("Memory destroyed.");*/ }
 
 uint8_t *Memory::getHostMemAddr(paddr_t paddr)
 {
     if (!inRange(paddr))
     {
         spdlog::error("Physical address 0x{:08x} out of range.", paddr);
-        assert(false);
     }
     return physicalMemory + (paddr - lower_bound);
 }

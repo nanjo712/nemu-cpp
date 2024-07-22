@@ -4,8 +4,14 @@
 
 #include "ISA/riscv32/Reset.h"
 
-ISA_Wrapper::ISA_Wrapper(Memory& mem)
-    : mem(mem), reg(), executor(reg, mem), reset_handler(reg)
+ISA_Wrapper::ISA_Wrapper(Memory& mem,
+                         std::function<void(word_t)> ebreak_handler,
+                         std::function<void(word_t)> invalid_inst_handler)
+    : mem(mem),
+      reg(),
+      executor(reg, mem, std::move(ebreak_handler),
+               std::move(invalid_inst_handler)),
+      reset_handler(reg)
 {
     reset();
     load_img();
@@ -36,6 +42,8 @@ void ISA_Wrapper::load_img()
     auto& img = reset_handler.get_img();
     for (int i = 0; i < 5; i++)
     {
-        mem.write(i * sizeof(word_t), img[i], sizeof(word_t));
+        mem.write(MEMORY_BASE + i * sizeof(word_t), img[i], sizeof(word_t));
     }
 };
+
+Register& ISA_Wrapper::getReg() { return reg; };

@@ -1,7 +1,6 @@
 #include "CPU/CPU.h"
 
 #include "ISA/ISA_Wrapper.h"
-#include "Memory/Memory.h"
 
 CPU::CPU(ISA_Wrapper& isa) : isa(isa) {};
 

@@ -15,6 +15,7 @@ class Reset_Handler
     ~Reset_Handler();
     const std::array<word_t, 5>& get_img();
     void reset();
+    word_t get_reset_vector() const { return reset_vector; }
 
    private:
     const word_t reset_vector = MEMORY_BASE + RESET_PC_OFFSET;
