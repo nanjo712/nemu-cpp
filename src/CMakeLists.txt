@@ -3,7 +3,6 @@ add_subdirectory(ISA)
 add_library(
     Nemu STATIC
     Memory.cpp
-    CPU.cpp
     Monitor.cpp
 )
 target_link_libraries(Nemu PRIVATE fmt spdlog ISA_Wrapper)

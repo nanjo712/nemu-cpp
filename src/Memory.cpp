@@ -5,6 +5,12 @@
 #include <cassert>
 #include <random>
 
+Memory& Memory::getMemory()
+{
+    static Memory memory;
+    return memory;
+}
+
 Memory::Memory()
 {
     std::random_device rd;
@@ -27,7 +33,7 @@ constexpr bool Memory::inRange(paddr_t addr) const
 
 Memory::~Memory() { /*spdlog::info("Memory destroyed.");*/ }
 
-uint8_t *Memory::getHostMemAddr(paddr_t paddr)
+uint8_t* Memory::getHostMemAddr(paddr_t paddr)
 {
     if (!inRange(paddr))
     {

@@ -13,12 +13,8 @@ class Memory;
 class Instruction
 {
    public:
-    Instruction(Register &reg, Memory &mem,
-                std::function<void(word_t)> ebreak_handler,
-                std::function<void(word_t)> invalid_inst_handler);
+    Instruction(Register &reg);
     ~Instruction();
-    std::function<void(word_t)> ebreak_handler;
-    std::function<void(word_t)> invalid_inst_handler;
     void execute(word_t inst);
 
    private:

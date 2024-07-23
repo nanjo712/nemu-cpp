@@ -5,21 +5,20 @@
 
 #include <chrono>
 #include <iostream>
-#include <memory>
 
-#include "CPU/CPU.h"
 #include "ISA/ISA_Wrapper.h"
 #include "Memory/Memory.h"
 #include "Monitor/Monitor.h"
 
-Monitor::Monitor()
+Monitor& Monitor::getMonitor()
+{
+    static Monitor monitor;
+    return monitor;
+}
+
+Monitor::Monitor() : mem(Memory::getMemory()), isa(ISA_Wrapper::getISA())
 {
     state = State::STOP;
-    mem = std::make_unique<Memory>();
-    isa = std::make_unique<ISA_Wrapper>(
-        *mem, [this](word_t pc) { ebreak_handler(pc); },
-        [this](word_t pc) { invaild_inst_handler(pc); });
-    cpu = std::make_unique<CPU>(*isa);
     inst_count = 0;
     timer = std::chrono::nanoseconds(0);
 }
@@ -33,7 +32,7 @@ void Monitor::trap_handler(State s, word_t pc, word_t ret)
     halt_ret = ret;
 }
 
-void Monitor::invaild_inst_handler(word_t pc)
+void Monitor::invalid_inst_handler(word_t pc)
 {
     std::cout << fmt::format("Invalid instruction at {0:x}\n", pc);
     trap_handler(State::ABORT, pc, -1);
@@ -42,7 +41,7 @@ void Monitor::invaild_inst_handler(word_t pc)
 void Monitor::ebreak_handler(word_t pc)
 {
     std::cout << fmt::format("Trigger ebreak at {0:x}\n", pc);
-    trap_handler(State::END, pc, isa->getReg().read(10));
+    trap_handler(State::END, pc, isa.reg.read(10));  // $10 is a0
 }
 
 void Monitor::statistics()
@@ -71,10 +70,9 @@ void Monitor::execute(uint64_t n)
 
     auto start = std::chrono::steady_clock::now();
 
-    // cpu->execute(n);
     for (uint64_t i = 0; i < n; i++)
     {
-        isa->execute_one_inst();
+        isa.execute_one_inst();
         inst_count++;
         if (state != State::RUNNING)
         {

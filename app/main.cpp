@@ -7,7 +7,7 @@ class Nemu
    public:
     Nemu()
     {
-        Monitor monitor;
+        Monitor& monitor = Monitor::getMonitor();
         monitor.execute(-1);
     }
     ~Nemu() { std::cout << "Nemu Destructor" << std::endl; }

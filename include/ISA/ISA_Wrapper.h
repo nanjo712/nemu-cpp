@@ -5,25 +5,30 @@
 #include "ISA/riscv32/Register.h"
 #include "ISA/riscv32/Reset.h"
 #include "Memory/Memory.h"
-#include "Utils/Utils.h"
 
 class ISA_Wrapper
 {
    public:
-    ISA_Wrapper(Memory& mem, std::function<void(word_t)> ebreak_handler,
-                std::function<void(word_t)> invalid_inst_handler);
-    ~ISA_Wrapper();
-    void execute_one_inst();
-    void display_reg();
-    void load_img();
-    void reset();
-    Register& getReg();
-
-   private:
-    Memory& mem;
     Register reg;
     Instruction executor;
     Reset_Handler reset_handler;
+
+    ISA_Wrapper(const ISA_Wrapper&) = delete;
+    ISA_Wrapper& operator=(const ISA_Wrapper&) = delete;
+    ISA_Wrapper(ISA_Wrapper&&) = delete;
+    ISA_Wrapper& operator=(ISA_Wrapper&&) = delete;
+
+    ~ISA_Wrapper();
+
+    static ISA_Wrapper& getISA();
+    void execute_one_inst();
+    void display_reg();
+    void load_img();
+
+   private:
+    Memory& mem;
+
+    ISA_Wrapper();
 };
 
 #endif  // ISA_H_

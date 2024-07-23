@@ -4,14 +4,11 @@
 
 #include "ISA/riscv32/Register.h"
 #include "Memory/Memory.h"
+#include "Monitor/Monitor.h"
 
-Instruction::Instruction(Register &reg, Memory &mem,
-                         std::function<void(word_t)> ebreak_handler,
-                         std::function<void(word_t)> invalid_inst_handler)
+Instruction::Instruction(Register &reg)
     : reg(reg),
-      mem(mem),
-      ebreak_handler(ebreak_handler),
-      invalid_inst_handler(invalid_inst_handler),
+      mem(Memory::getMemory()),
       instList({
           InstInfo{"??????? ????? ????? ??? ????? 00101 11", "auipc", U,
                    [this]() { auipc(); }},
@@ -90,5 +87,11 @@ void Instruction::execute()
 void Instruction::auipc() { reg.write(rd, reg.getPC() + immU); }
 void Instruction::lbu() { reg.write(rd, mem.read(reg.read(rs1) + immI, 1)); }
 void Instruction::sb() { mem.write(reg.read(rs1) + immS, reg.read(rs2), 1); }
-void Instruction::ebreak() { ebreak_handler(reg.getPC()); }
-void Instruction::inv() { invalid_inst_handler(reg.getPC()); }
+void Instruction::ebreak()
+{
+    Monitor::getMonitor().ebreak_handler(reg.getPC());
+}
+void Instruction::inv()
+{
+    Monitor::getMonitor().invalid_inst_handler(reg.getPC());
+}
