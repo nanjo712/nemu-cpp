@@ -5,6 +5,7 @@
 
 #include <cassert>
 #include <cstdint>
+#include <string>
 
 #include "ISA/ISA_Wrapper.h"
 #include "Memory/Memory.h"
@@ -43,9 +44,9 @@ uint32_t Expression::get_precedence(TOKEN_TYPE type)
     }
 }
 
-Expression::Expression() : mem(Memory::getMemory()), isa(ISA_Wrapper::getISA())
+Expression::Expression() : monitor(Monitor::getMonitor())
 {
-    if (regex.size() != 0) return;
+    if (regexs.size() != 0) return;
     for (auto &rule : rules)
     {
         regex_t re;
@@ -55,33 +56,44 @@ Expression::Expression() : mem(Memory::getMemory()), isa(ISA_Wrapper::getISA())
             char buf[512];
             regerror(ret, &re, buf, sizeof(buf));
             spdlog::error("regcomp: {}", buf);
-            regex.clear();
+            regexs.clear();
             assert(false);
         }
-        regex.push_back(re);
+        regexs.push_back(re);
     }
 }
 
 Expression::~Expression() {}
 
-uint32_t Expression::evaluate(std::string expr) { return 0; }
+uint32_t Expression::evaluate(std::string expr, bool &success)
+{
+    if (!make_token(expr))
+    {
+        success = false;
+        return 0;
+    }
+
+    success = true;
+    uint32_t ret = eval(0, tokens.size() - 1);
+    return ret;
+}
 
 bool Expression::make_token(std::string expr)
 {
     tokens.clear();
-    int pos = 0;
+    long unsigned int pos = 0;
     while (pos < expr.size())
     {
         bool match = false;
-        for (auto &re : regex)
+        for (auto i = 0ul; i < rules.size(); i++)
         {
             regmatch_t pmatch;
-            int ret = regexec(&re, expr.c_str() + pos, 1, &pmatch, 0);
+            int ret = regexec(&regexs[i], expr.c_str() + pos, 1, &pmatch, 0);
             if (ret == 0 && pmatch.rm_so == 0)
             {
                 Token token;
                 token.str = expr.substr(pos, pmatch.rm_eo);
-                token.type = rules[regex.size()].token_type;
+                token.type = rules[i].token_type;
                 tokens.push_back(token);
                 pos += pmatch.rm_eo;
                 match = true;
@@ -115,7 +127,8 @@ bool Expression::check_parentheses(int p, int q)
 
 int Expression::dominant_operator(int p, int q)
 {
-    int i, op = p, cnt = 0, min_priority = 0x3f3f3f3f;
+    int i, op = p, cnt = 0;
+    uint32_t min_priority = 0x3f3f3f3f;
     for (i = p; i <= q; i++)
     {
         if (tokens[i].type == TK_LEFT_BRACKET)
@@ -160,7 +173,7 @@ uint32_t Expression::eval(int p, int q)
         }
         else if (tokens[p].type == TK_REGISTER)
         {
-            val = isa.reg.read(tokens[p].str);
+            val = monitor.isa.get_reg_val(tokens[p].str.substr(1));
         }
         else
             assert(false);
@@ -184,7 +197,7 @@ uint32_t Expression::eval(int p, int q)
                     return -eval(p + 1, q);
                 case TK_MUL:
                     address = eval(p + 1, q);
-                    return mem.read(address, 4);
+                    return monitor.mem.read(address, 4);
                 default:
                     return 0;
             }

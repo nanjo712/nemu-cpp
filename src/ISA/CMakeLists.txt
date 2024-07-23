@@ -13,4 +13,6 @@ target_link_libraries(
     ISA_Wrapper
     PRIVATE
     ISA_RISCV32
+    Memory
+    Utils
 )

@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "Monitor/Monitor.h"
+
 class Memory;
 class ISA_Wrapper;
 
@@ -16,7 +18,7 @@ class Expression
    public:
     Expression();
     ~Expression();
-    uint32_t evaluate(std::string expr);
+    uint32_t evaluate(std::string expr, bool& success);
 
    private:
     enum TOKEN_TYPE
@@ -42,7 +44,7 @@ class Expression
         TOKEN_TYPE token_type;
     };
     static const std::array<Rule, 13> rules;
-    static std::vector<regex_t> regex;
+    std::vector<regex_t> regexs;
     static uint32_t get_precedence(TOKEN_TYPE type);
 
     struct Token
@@ -52,8 +54,7 @@ class Expression
     };
     std::vector<Token> tokens;
 
-    Memory& mem;
-    ISA_Wrapper& isa;
+    Monitor& monitor;
 
     bool make_token(std::string expr);
     bool check_parentheses(int p, int q);

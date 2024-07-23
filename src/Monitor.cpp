@@ -55,13 +55,17 @@ void Monitor::statistics()
         spdlog::info("Simulation time is too short to calculate IPS.");
 }
 
-void Monitor::execute(uint64_t n)
+bool Monitor::execute(uint64_t n)
 {
     if (state == State::END || state == State::ABORT)
     {
         std::cout << "Program execution has ended. To restart the program, "
                      "exit Monitor and run again.\n";
-        return;
+        return false;
+    }
+    else if (state == State::QUIT)
+    {
+        return false;
     }
     else
     {
@@ -88,6 +92,7 @@ void Monitor::execute(uint64_t n)
     if (state == State::RUNNING)
     {
         state = State::STOP;
+        return true;
     }
     else if (state == State::END || state == State::ABORT)
     {
@@ -95,9 +100,14 @@ void Monitor::execute(uint64_t n)
         spdlog::info("Halt PC = {0:x}, Halt Return Value = {1:x}", halt_pc,
                      halt_ret);
         spdlog::info("Hit {} Trap", state == State::END ? "Good" : "Bad");
+        return false;
     }
     else if (state == State::QUIT)
     {
         statistics();
+        return false;
     }
+    return false;  // fallback
 }
+
+void Monitor::quit() { state = State::QUIT; }

@@ -12,6 +12,9 @@ class ISA_Wrapper;
 class Monitor
 {
    public:
+    Memory& mem;
+    ISA_Wrapper& isa;
+
     Monitor(const Monitor&) = delete;
     Monitor& operator=(const Monitor&) = delete;
     Monitor(Monitor&&) = delete;
@@ -20,7 +23,8 @@ class Monitor
     ~Monitor();
 
     static Monitor& getMonitor();
-    void execute(uint64_t n);
+    bool execute(uint64_t n);
+    void quit();
 
     void invalid_inst_handler(word_t pc);
     void ebreak_handler(word_t pc);
@@ -36,8 +40,6 @@ class Monitor
     } state;
     word_t halt_pc;
     word_t halt_ret;
-    Memory& mem;
-    ISA_Wrapper& isa;
     std::chrono::nanoseconds timer;
     uint64_t inst_count;
 

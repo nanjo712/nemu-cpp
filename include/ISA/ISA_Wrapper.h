@@ -4,10 +4,14 @@
 #include "ISA/riscv32/Instruction.h"
 #include "ISA/riscv32/Register.h"
 #include "ISA/riscv32/Reset.h"
-#include "Memory/Memory.h"
+
+class Memory;
 
 class ISA_Wrapper
 {
+   private:
+    Memory& mem;
+
    public:
     Register reg;
     Instruction executor;
@@ -24,10 +28,9 @@ class ISA_Wrapper
     void execute_one_inst();
     void display_reg();
     void load_img();
+    word_t get_reg_val(const std::string_view reg_name);
 
    private:
-    Memory& mem;
-
     ISA_Wrapper();
 };
 

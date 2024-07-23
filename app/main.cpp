@@ -1,14 +1,19 @@
+#include <spdlog/spdlog.h>
+
 #include <iostream>
 
-#include "Monitor/Monitor.h"
+#include "Debugger/Debugger.h"
 
 class Nemu
 {
    public:
     Nemu()
     {
-        Monitor& monitor = Monitor::getMonitor();
-        monitor.execute(-1);
+        spdlog::info("Build time: {}, {}", __TIME__, __DATE__);
+        Debugger& debugger = Debugger::getDebugger();
+        spdlog::info("Welcome to NEMU!");
+        spdlog::info("For help, type \"help\"");
+        debugger.run();
     }
     ~Nemu() { std::cout << "Nemu Destructor" << std::endl; }
 };
