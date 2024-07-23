@@ -27,19 +27,19 @@ class Debugger
     {
         const char* cmd;
         const char* desc;
-        int (Debugger::*func)(char*);
+        int (Debugger::*func)();
     };
     std::vector<Command> commands;
 
     Debugger();
-    int cmd_c(char* args);
-    int cmd_info(char* arg);
-    int cmd_si(char* args);
-    int cmd_x(char* args);
-    int cmd_p(char* args);
-    int cmd_q(char* args);
-    int cmd_w(char* args);
-    int cmd_help(char* args);
+    int cmd_c();
+    int cmd_info();
+    int cmd_si();
+    int cmd_x();
+    int cmd_p();
+    int cmd_q();
+    int cmd_w();
+    int cmd_help();
 
     int cmd_handler(char* cmd);
 };

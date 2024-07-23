@@ -12,18 +12,18 @@
 #include "Utils/Utils.h"
 
 const std::array<Expression::Rule, 13> Expression::rules = {
-    Rule{" +", TK_NOTYPE},              // spaces
-    Rule{"\\+", TK_ADD},                // plus
-    Rule{"-", TK_SUB},                  // sub
-    Rule{"\\*", TK_MUL},                // mul
-    Rule{"/", TK_DIV},                  // div
-    Rule{"==", TK_EQ},                  // equal
-    Rule{"\\(", TK_LEFT_BRACKET},       // left bracket
-    Rule{"\\)", TK_RIGHT_BRACKET},      // right bracket
-    Rule{"\\$[a-zA-Z]+", TK_REGISTER},  // register
-    Rule{"0x[0-9a-fA-F]+", TK_HEX},     // hex
-    Rule{"[0-9]+", TK_NUMBER},          // number
-    Rule{"&&", TK_AND}                  // and
+    Rule{" +", TK_NOTYPE},                 // spaces
+    Rule{"\\+", TK_ADD},                   // plus
+    Rule{"-", TK_SUB},                     // sub
+    Rule{"\\*", TK_MUL},                   // mul
+    Rule{"/", TK_DIV},                     // div
+    Rule{"==", TK_EQ},                     // equal
+    Rule{"\\(", TK_LEFT_BRACKET},          // left bracket
+    Rule{"\\)", TK_RIGHT_BRACKET},         // right bracket
+    Rule{"\\$[a-zA-Z0-9]+", TK_REGISTER},  // register
+    Rule{"0x[0-9a-fA-F]+", TK_HEX},        // hex
+    Rule{"[0-9]+", TK_NUMBER},             // number
+    Rule{"&&", TK_AND}                     // and
 };
 
 uint32_t Expression::get_precedence(TOKEN_TYPE type)
@@ -144,7 +144,9 @@ int Expression::dominant_operator(int p, int q)
                  (!(tokens[i].type == TK_ADD || tokens[i].type == TK_SUB ||
                     tokens[i].type == TK_MUL) ||
                   tokens[i - 1].type == TK_RIGHT_BRACKET ||
-                  tokens[i - 1].type == TK_NUMBER || i == p))
+                  tokens[i - 1].type == TK_NUMBER ||
+                  tokens[i - 1].type == TK_REGISTER ||
+                  tokens[i - 1].type == TK_HEX || i == p))
         {
             min_priority = get_precedence(tokens[i].type);
             op = i;

@@ -54,8 +54,9 @@ Debugger::Debugger()
 
 Debugger::~Debugger() {}
 
-int Debugger::cmd_c(char* args)
+int Debugger::cmd_c()
 {
+    auto args = strtok(nullptr, " ");
     if (args != nullptr)
     {
         printf("Command 'c' does not accept any arguments\n");
@@ -65,8 +66,9 @@ int Debugger::cmd_c(char* args)
     return 0;
 }
 
-int Debugger::cmd_info(char* args)
+int Debugger::cmd_info()
 {
+    auto args = strtok(nullptr, " ");
     if (args == nullptr)
     {
         printf("Command 'info' requires an argument\n");
@@ -87,37 +89,35 @@ int Debugger::cmd_info(char* args)
     return 0;
 }
 
-int Debugger::cmd_si(char* args)
+int Debugger::cmd_si()
 {
-    if (args == nullptr)
-    {
-        return !monitor.execute(1);
-    }
-    else
+    auto args = strtok(nullptr, " ");
+    if (args != nullptr)
     {
         printf("Command 'si' does not accept any arguments\n");
         return 1;
     }
+    return !monitor.execute(1);
 }
 
-int Debugger::cmd_x(char* args)
+int Debugger::cmd_x()
 {
-    char* arg = strtok(args, " ");
-    if (arg == nullptr)
+    auto args = strtok(nullptr, " ");
+    if (args == nullptr)
     {
-        printf("Invalid argument for command 'x'\n");
+        printf("Invalid first argument for command 'x'\n");
         return 1;
     }
-    int n = atoi(arg);
-    arg = strtok(nullptr, " ");
-    if (arg == nullptr)
+    int n = atoi(args);
+    args = strtok(nullptr, " ");
+    if (args == nullptr)
     {
-        printf("Invalid argument for command 'x'\n");
+        printf("Invalid second argument for command 'x'\n");
         return 1;
     }
     Memory::paddr_t address;
     bool flag;
-    address = Expression().evaluate(arg, flag);
+    address = Expression().evaluate(args, flag);
     if (!flag)
     {
         printf("Invalid expression\n");
@@ -132,9 +132,10 @@ int Debugger::cmd_x(char* args)
     return 0;
 }
 
-int Debugger::cmd_p(char* args)
+int Debugger::cmd_p()
 {
     bool flag;
+    auto args = strtok(nullptr, " ");
     unsigned result = Expression().evaluate(args, flag);
     if (!flag)
     {
@@ -147,8 +148,9 @@ int Debugger::cmd_p(char* args)
     return 0;
 }
 
-int Debugger::cmd_q(char* args)
+int Debugger::cmd_q()
 {
+    auto args = strtok(nullptr, " ");
     if (args != nullptr)
     {
         printf("Command 'q' does not accept any arguments\n");
@@ -158,14 +160,15 @@ int Debugger::cmd_q(char* args)
     return -1;
 }
 
-int Debugger::cmd_w(char* args)
+int Debugger::cmd_w()
 {
     printf("Not implemented yet\n");
     return 0;
 }
 
-int Debugger::cmd_help(char* args)
+int Debugger::cmd_help()
 {
+    auto args = strtok(nullptr, " ");
     if (args != nullptr)
     {
         printf("Command 'help' does not accept any arguments\n");
@@ -181,12 +184,12 @@ int Debugger::cmd_help(char* args)
 
 int Debugger::cmd_handler(char* cmd)
 {
-    char* args = strtok(nullptr, " ");
+    auto arg = strtok(cmd, " ");
     for (const auto& c : commands)
     {
-        if (strcmp(cmd, c.cmd) == 0)
+        if (strcmp(arg, c.cmd) == 0)
         {
-            return (this->*c.func)(args);
+            return (this->*c.func)();
         }
     }
     printf("Invalid command\n");
@@ -202,12 +205,7 @@ int Debugger::run()
         {
             break;
         }
-        char* cmd = strtok(line, " ");
-        if (cmd == nullptr)
-        {
-            continue;
-        }
-        if (cmd_handler(cmd) < 0) break;
+        if (cmd_handler(line) < 0) break;
     }
     return 0;
 }
