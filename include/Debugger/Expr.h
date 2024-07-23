@@ -8,6 +8,9 @@
 #include <string>
 #include <vector>
 
+class Memory;
+class ISA_Wrapper;
+
 class Expression
 {
    public:
@@ -48,6 +51,9 @@ class Expression
         std::string str;
     };
     std::vector<Token> tokens;
+
+    Memory& mem;
+    ISA_Wrapper& isa;
 
     bool make_token(std::string expr);
     bool check_parentheses(int p, int q);

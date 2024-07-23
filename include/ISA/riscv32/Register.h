@@ -16,6 +16,7 @@ class Register
     int getRegIndex(const std::string_view regName);
     void write(int reg, word_t data);
     word_t read(int reg);
+    word_t read(const std::string_view regName);
     void setPC(word_t data);
     word_t getPC();
 

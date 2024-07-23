@@ -3,7 +3,6 @@
 
 #include <chrono>
 #include <cstdint>
-#include <memory>
 
 #include "Utils/Utils.h"
 
@@ -22,7 +21,6 @@ class Monitor
 
     static Monitor& getMonitor();
     void execute(uint64_t n);
-    void statistics();
 
     void invalid_inst_handler(word_t pc);
     void ebreak_handler(word_t pc);
@@ -45,6 +43,7 @@ class Monitor
 
     Monitor();
 
+    void statistics();
     void trap_handler(State s, word_t pc, word_t ret);
 };
 

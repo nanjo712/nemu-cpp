@@ -6,6 +6,10 @@
 #include <cassert>
 #include <cstdint>
 
+#include "ISA/ISA_Wrapper.h"
+#include "Memory/Memory.h"
+#include "Utils/Utils.h"
+
 const std::array<Expression::Rule, 13> Expression::rules = {
     Rule{" +", TK_NOTYPE},              // spaces
     Rule{"\\+", TK_ADD},                // plus
@@ -39,7 +43,7 @@ uint32_t Expression::get_precedence(TOKEN_TYPE type)
     }
 }
 
-Expression::Expression()
+Expression::Expression() : mem(Memory::getMemory()), isa(ISA_Wrapper::getISA())
 {
     if (regex.size() != 0) return;
     for (auto &rule : rules)
@@ -156,15 +160,10 @@ uint32_t Expression::eval(int p, int q)
         }
         else if (tokens[p].type == TK_REGISTER)
         {
-            spdlog::error("Register Access is not implemented yet");
-            assert(0);
-            return 0;
+            val = isa.reg.read(tokens[p].str);
         }
         else
-        {
-            spdlog::error("Bad expression");
-            return 0;
-        }
+            assert(false);
         return val;
     }
     else if (check_parentheses(p, q))
@@ -176,6 +175,7 @@ uint32_t Expression::eval(int p, int q)
         int op = dominant_operator(p, q);
         if (p == op)
         {
+            word_t address;
             switch (tokens[op].type)
             {
                 case TK_ADD:
@@ -183,11 +183,8 @@ uint32_t Expression::eval(int p, int q)
                 case TK_SUB:
                     return -eval(p + 1, q);
                 case TK_MUL:
-                    spdlog::error("Memory access is not implemented");
-                    assert(0);
-                    // word_t address = eval(p + 1, q);
-                    // address = vaddr_read(address, 4);
-                    // return address;
+                    address = eval(p + 1, q);
+                    return mem.read(address, 4);
                 default:
                     return 0;
             }

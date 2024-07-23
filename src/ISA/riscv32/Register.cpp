@@ -42,6 +42,12 @@ void Register::write(int reg, word_t data)
 
 word_t Register::read(int reg) { return registers[reg]; }
 
+word_t Register::read(const std::string_view regName)
+{
+    int reg = getRegIndex(regName);
+    return registers[reg];
+}
+
 void Register::setPC(word_t data) { pc = data; }
 
 word_t Register::getPC() { return pc; }
