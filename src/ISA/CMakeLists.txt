@@ -7,7 +7,7 @@ add_library(
 target_include_directories(
     ISA_Wrapper
     PUBLIC
-    ${CMAKE_SOURCE_DIR}/include
+    ${NEMU_CPP_HOME}/include
 )
 target_link_libraries(
     ISA_Wrapper
