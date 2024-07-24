@@ -1,9 +1,12 @@
 #include "Debugger/Debugger.h"
 
+#include <fmt/core.h>
 #include <readline/history.h>
 #include <readline/readline.h>
+#include <sys/types.h>
 
 #include <cstring>
+#include <iostream>
 
 #include "Debugger/Expr.h"
 #include "ISA/ISA_Wrapper.h"
@@ -47,12 +50,55 @@ Debugger::Debugger()
           {"p", "Print expression", &Debugger::cmd_p},
           {"q", "Quit", &Debugger::cmd_q},
           {"w", "Set watchpoint", &Debugger::cmd_w},
+          {"d", "Delete watchpoint", &Debugger::cmd_d},
           {"help", "Print help", &Debugger::cmd_help},
       })
 {
+    for (int i = 0; i < 32; i++)
+    {
+        watchpoint_free_list.push_back(i);
+    }
 }
 
 Debugger::~Debugger() {}
+
+bool Debugger::check_watchpoint()
+{
+    for (auto wp : watchpoint_used_list)
+    {
+        bool flag;
+        int value =
+            Expression().evaluate(watchpoint_pool[wp].expr.c_str(), flag);
+        if (!flag)
+        {
+            printf("Invalid expression\n");
+            return false;
+        }
+        if (value != watchpoint_pool[wp].value)
+        {
+            printf("Watchpoint %d: %s\n", wp, watchpoint_pool[wp].expr.c_str());
+            printf("Old value: %d\n", watchpoint_pool[wp].value);
+            printf("New value: %d\n", value);
+            watchpoint_pool[wp].value = value;
+            monitor.stop();
+            return true;
+        }
+    }
+    return false;
+}
+
+void Debugger::execute(uint64_t step)
+{
+#ifdef CHECK_WATCHPOINT
+    while (step--)
+    {
+        monitor.execute(1);
+        if (check_watchpoint()) break;
+    }
+#else
+    monitor.execute(step);
+#endif
+}
 
 int Debugger::cmd_c()
 {
@@ -62,7 +108,7 @@ int Debugger::cmd_c()
         printf("Command 'c' does not accept any arguments\n");
         return 1;
     }
-    while (monitor.execute(1));
+    execute(-1);
     return 0;
 }
 
@@ -80,7 +126,12 @@ int Debugger::cmd_info()
     }
     else if (strcmp(args, "w") == 0)
     {
-        printf("Not implemented yet\n");
+        for (auto wp : watchpoint_used_list)
+        {
+            std::cout << fmt::format("Watchpoint {}: {} = {}\n", wp,
+                                     watchpoint_pool[wp].expr,
+                                     watchpoint_pool[wp].value);
+        }
     }
     else
     {
@@ -97,7 +148,8 @@ int Debugger::cmd_si()
         printf("Command 'si' does not accept any arguments\n");
         return 1;
     }
-    return !monitor.execute(1);
+    execute(1);
+    return 0;
 }
 
 int Debugger::cmd_x()
@@ -162,7 +214,78 @@ int Debugger::cmd_q()
 
 int Debugger::cmd_w()
 {
-    printf("Not implemented yet\n");
+    auto args = strtok(nullptr, " ");
+    if (args == nullptr)
+    {
+        printf("Command 'w' requires an argument\n");
+        return 1;
+    }
+
+    bool flag;
+    Expression expr;
+    auto res = expr.evaluate(args, flag);
+    if (!flag)
+    {
+        printf("Invalid expression\n");
+        return 1;
+    }
+
+    if (watchpoint_free_list.empty())
+    {
+        printf("No free watchpoint\n");
+        return 1;
+    }
+    int wp_id = watchpoint_free_list.front();
+    watchpoint_free_list.pop_front();
+    watchpoint_used_list.push_back(wp_id);
+    watchpoint_pool[wp_id].expr = args;
+    watchpoint_pool[wp_id].value = res;
+
+    printf("Set watchpoint %d: %s\n", wp_id, args);
+
+    return 0;
+}
+
+int Debugger::cmd_d()
+{
+    auto args = strtok(nullptr, " ");
+    if (args == nullptr)
+    {
+        printf("Command 'd' requires an argument\n");
+        return 1;
+    }
+    int wp_id = atoi(args);
+    if (wp_id < 0 || wp_id >= 32)
+    {
+        printf("Invalid watchpoint id\n");
+        return 1;
+    }
+    if (watchpoint_used_list.empty())
+    {
+        printf("No watchpoints to delete\n");
+        return 1;
+    }
+
+    bool found = false;
+    for (auto wp : watchpoint_used_list)
+    {
+        if (wp == wp_id)
+        {
+            found = true;
+            watchpoint_used_list.remove(wp_id);
+            break;
+        }
+    }
+    if (!found)
+    {
+        printf("Watchpoint %d not found\n", wp_id);
+        return 1;
+    }
+    else
+    {
+        watchpoint_free_list.push_back(wp_id);
+        printf("Delete watchpoint %d\n", wp_id);
+    }
     return 0;
 }
 

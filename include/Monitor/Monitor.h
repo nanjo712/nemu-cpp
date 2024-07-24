@@ -9,6 +9,7 @@
 class CPU;
 class Memory;
 class ISA_Wrapper;
+class Debugger;
 class Monitor
 {
    public:
@@ -23,8 +24,7 @@ class Monitor
     ~Monitor();
 
     static Monitor& getMonitor();
-    bool execute(uint64_t n);
-    void quit();
+    void execute(uint64_t n);
 
     void invalid_inst_handler(word_t pc);
     void ebreak_handler(word_t pc);
@@ -47,6 +47,10 @@ class Monitor
 
     void statistics();
     void trap_handler(State s, word_t pc, word_t ret);
+    void stop();
+    void quit();
+
+    friend class Debugger;
 };
 
 #endif  // MONITOR_H_

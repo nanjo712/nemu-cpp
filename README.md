@@ -2,6 +2,8 @@
 
 **This Repo is still developing!**
 
+This repo only guarantees the support of RICS-V 32bit.
+
 NEMU rewrite in C++.
 
 NEMU(NJU Emulator) is a simple but complete full-system emulator designed for teaching purpose.
@@ -16,7 +18,7 @@ The main features of NEMU include
   * watch point
   * differential testing with reference design (e.g. QEMU)
   * snapshot
-* CPU core with support of most common used instructions
+* CPU core with support of most common used instructions 
   * x86
     * real mode is not supported
     * x87 floating point instructions are not supported

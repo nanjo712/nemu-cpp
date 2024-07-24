@@ -26,5 +26,5 @@ add_library(
     Debugger.cpp
     Expr.cpp
 )   
-target_link_libraries(Debugger PRIVATE Monitor ISA_Wrapper ${Readline_LIBRARY})
+target_link_libraries(Debugger PRIVATE Monitor ISA_Wrapper fmt ${Readline_LIBRARY})
 target_include_directories(Debugger PUBLIC ${CMAKE_SOURCE_DIR}/include ${Readline_INCLUDE_DIR})

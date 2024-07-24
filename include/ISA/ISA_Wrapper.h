@@ -11,12 +11,11 @@ class ISA_Wrapper
 {
    private:
     Memory& mem;
-
-   public:
     Register reg;
     Instruction executor;
     Reset_Handler reset_handler;
 
+   public:
     ISA_Wrapper(const ISA_Wrapper&) = delete;
     ISA_Wrapper& operator=(const ISA_Wrapper&) = delete;
     ISA_Wrapper(ISA_Wrapper&&) = delete;
@@ -32,6 +31,8 @@ class ISA_Wrapper
 
    private:
     ISA_Wrapper();
+
+    friend class Monitor;
 };
 
 #endif  // ISA_H_
