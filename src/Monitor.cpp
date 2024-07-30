@@ -41,7 +41,8 @@ void Monitor::invalid_inst_handler(word_t pc)
 void Monitor::ebreak_handler(word_t pc)
 {
     std::cout << fmt::format("Trigger ebreak at {0:x}\n", pc);
-    trap_handler(State::END, pc, isa.reg.read(10));  // $10 is a0
+    auto next_state = isa.reg.read(10) == 0 ? State::END : State::ABORT;
+    trap_handler(next_state, pc, isa.reg.read(10));  // $10 is a0
 }
 
 void Monitor::statistics()
@@ -98,7 +99,14 @@ void Monitor::execute(uint64_t n)
         statistics();
         spdlog::info("Halt PC = {0:x}, Halt Return Value = {1:x}", halt_pc,
                      halt_ret);
-        spdlog::info("Hit {} Trap", state == State::END ? "Good" : "Bad");
+        if (state == State::ABORT)
+        {
+            spdlog::error("Program aborted.");
+        }
+        else if (state == State::END)
+        {
+            spdlog::info("Program ended.");
+        }
     }
     else if (state == State::QUIT)
     {
