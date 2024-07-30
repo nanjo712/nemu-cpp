@@ -101,7 +101,7 @@ void Instruction::auipc() { reg.write(rd, reg.getPC() + immU); }
 
 void Instruction::jal()
 {
-    reg.write(rd, nextPC + 4);
+    reg.write(rd, nextPC);
     nextPC = reg.getPC() + immJ;
 }
 
