@@ -93,6 +93,7 @@ void Debugger::execute(uint64_t step)
     while (step--)
     {
         monitor.execute(1);
+        if (monitor.state != Monitor::State::STOP) break;
         if (check_watchpoint()) break;
     }
 #else

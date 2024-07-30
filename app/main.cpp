@@ -1,7 +1,6 @@
 #include <getopt.h>
 #include <spdlog/spdlog.h>
 
-#include <iostream>
 #include <string>
 
 #include "Debugger/Debugger.h"
@@ -25,7 +24,7 @@ class Nemu
         spdlog::info("For help, type \"help\"");
         debugger.run();
     }
-    ~Nemu() { std::cout << "Nemu Destructor" << std::endl; }
+    ~Nemu() { spdlog::info("Goodbye!"); }
 
    private:
     int parse_args(int argc, char* argv[])
@@ -57,8 +56,6 @@ class Nemu
                     break;
                 case 1:
                     ISA_Wrapper::img_file = optarg;
-                    spdlog::info("Using customize image: {}",
-                                 ISA_Wrapper::img_file);
                     return 0;
                 default:
                     print_usage();
