@@ -61,7 +61,7 @@ void ISA_Wrapper::display_reg()
 void ISA_Wrapper::load_img()
 {
     auto& img = reset_handler.get_img();
-    for (int i = 0; i < 5; i++)
+    for (auto i = 0u; i < img.size(); i++)
     {
         mem.write(MEMORY_BASE + i * sizeof(word_t), img[i], sizeof(word_t));
     }

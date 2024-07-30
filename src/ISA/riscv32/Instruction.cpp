@@ -12,14 +12,27 @@ Instruction::Instruction(Register &reg)
       instList({
           InstInfo{"??????? ????? ????? ??? ????? 00101 11", "auipc", U,
                    [this]() { auipc(); }},
+          InstInfo{"??????? ????? ????? ??? ????? 11011 11", "jal", U,
+                   [this]() { jal(); }},
+          InstInfo{"??????? ????? ????? 000 ????? 11001 11", "jalr", I,
+                   [this]() { jalr(); }},
+          InstInfo{"??????? ????? ????? 010 ????? 00000 11", "lw", I,
+                   [this]() { lw(); }},
           InstInfo{"??????? ????? ????? 100 ????? 00000 11", "lbu", I,
                    [this]() { lbu(); }},
           InstInfo{"??????? ????? ????? 000 ????? 01000 11", "sb", S,
                    [this]() { sb(); }},
+          InstInfo{"??????? ????? ????? 010 ????? 01000 11", "sw", S,
+                   [this]() { sw(); }},
+          InstInfo{"??????? ????? ????? 000 ????? 00100 11", "addi", I,
+                   [this]() { addi(); }},
+          InstInfo{"0000000 ????? ????? 000 ????? 01100 11", "add", R,
+                   [this]() { add(); }},
           InstInfo{"0000000 00001 00000 000 00000 11100 11", "ebreak", N,
                    [this]() { ebreak(); }},
           InstInfo{"??????? ????? ????? ??? ????? ????? ??", "inv", N,
                    [this]() { inv(); }},
+
       })
 {
     for (auto &inst : instList)
@@ -67,7 +80,7 @@ void Instruction::execute(word_t inst)
                                  (extract_bits(inst, 20, 20) << 11) |
                                  (extract_bits(inst, 12, 19) << 12),
                              21);
-    word_t nextPC = reg.getPC() + 4;
+    nextPC = reg.getPC() + 4;
     execute();
     reg.setPC(nextPC);
 }
@@ -85,12 +98,36 @@ void Instruction::execute()
 }
 
 void Instruction::auipc() { reg.write(rd, reg.getPC() + immU); }
+
+void Instruction::jal()
+{
+    reg.write(rd, nextPC + 4);
+    nextPC = reg.getPC() + immJ;
+}
+
+void Instruction::jalr()
+{
+    reg.write(rd, nextPC);
+    nextPC = (reg.read(rs1) + immI) & ~1;
+}
+
+void Instruction::lw() { reg.write(rd, mem.read(reg.read(rs1) + immI, 4)); }
+
 void Instruction::lbu() { reg.write(rd, mem.read(reg.read(rs1) + immI, 1)); }
+
 void Instruction::sb() { mem.write(reg.read(rs1) + immS, reg.read(rs2), 1); }
+
+void Instruction::sw() { mem.write(reg.read(rs1) + immS, reg.read(rs2), 4); }
+
+void Instruction::addi() { reg.write(rd, reg.read(rs1) + immI); }
+
+void Instruction::add() { reg.write(rd, reg.read(rs1) + reg.read(rs2)); }
+
 void Instruction::ebreak()
 {
     Monitor::getMonitor().ebreak_handler(reg.getPC());
 }
+
 void Instruction::inv()
 {
     Monitor::getMonitor().invalid_inst_handler(reg.getPC());

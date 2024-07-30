@@ -39,14 +39,28 @@ class Instruction
     };
     word_t inst, opcode, rd, rs1, rs2, funct3, funct7, immI, immS, immB, immU,
         immJ;
+    word_t nextPC;
     Register &reg;
     Memory &mem;
     std::array<Instruction::InstInfo, 128> instList;
 
     void execute();
+
     void auipc();
+    void jal();
+    void jalr();
+
+    void lw();
     void lbu();
+    void li();
+
     void sb();
+    void sw();
+
+    void addi();
+
+    void add();
+
     void ebreak();
     void inv();
 };

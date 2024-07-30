@@ -28,9 +28,10 @@ void Reset_Handler::set_img(const std::string& img_file)
         file.seekg(0, std::ios::end);
         size_t size = file.tellg();
         file.seekg(0, std::ios::beg);
-        img.resize(size / 4);
+        img.resize(size / 4 + 1);
         file.read(reinterpret_cast<char*>(img.data()), size);
         file.close();
+        spdlog::info("Loading img with size = {} ", size);
     }
 }
 

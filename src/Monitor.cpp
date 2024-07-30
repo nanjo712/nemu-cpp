@@ -35,6 +35,8 @@ void Monitor::trap_handler(State s, word_t pc, word_t ret)
 void Monitor::invalid_inst_handler(word_t pc)
 {
     std::cout << fmt::format("Invalid instruction at {0:x}\n", pc);
+    word_t inst = mem.read(pc, 4);
+    std::cout << fmt::format("Instruction: \n BIN:{0:b}\n HEX:{0:x}\n", inst);
     trap_handler(State::ABORT, pc, -1);
 }
 
