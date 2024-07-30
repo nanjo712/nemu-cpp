@@ -1,13 +1,14 @@
 #include "ISA/ISA_Wrapper.h"
 
 #include <fmt/core.h>
+#include <spdlog/spdlog.h>
 
 #include <iostream>
 
-#include "ISA/riscv32/Register.h"
-#include "ISA/riscv32/Reset.h"
 #include "Memory/Memory.h"
 #include "Utils/Disasm.h"
+
+std::string ISA_Wrapper::img_file = "null";
 
 ISA_Wrapper& ISA_Wrapper::getISA()
 {
@@ -18,6 +19,15 @@ ISA_Wrapper& ISA_Wrapper::getISA()
 ISA_Wrapper::ISA_Wrapper()
     : mem(Memory::getMemory()), reg(), executor(reg), reset_handler(reg)
 {
+    if (img_file != "null")
+    {
+        spdlog::info("Using image file: {}", img_file);
+    }
+    else
+    {
+        spdlog::info("Using built-in image");
+    }
+    reset_handler.set_img(img_file);
     reset_handler.reset();
     init_disasm(
         "riscv32"

@@ -1,6 +1,8 @@
 #ifndef ISA_H_
 #define ISA_H_
 
+#include <string>
+
 #include "ISA/riscv32/Instruction.h"
 #include "ISA/riscv32/Register.h"
 #include "ISA/riscv32/Reset.h"
@@ -22,7 +24,7 @@ class ISA_Wrapper
     ISA_Wrapper& operator=(ISA_Wrapper&&) = delete;
 
     ~ISA_Wrapper();
-
+    static std::string img_file;
     static ISA_Wrapper& getISA();
     void execute_one_inst();
     void display_reg();
