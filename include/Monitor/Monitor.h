@@ -29,6 +29,8 @@ class Monitor
     void invalid_inst_handler(word_t pc);
     void ebreak_handler(word_t pc);
 
+    bool is_bad_status();
+
    private:
     enum State
     {

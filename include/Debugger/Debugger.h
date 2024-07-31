@@ -22,7 +22,7 @@ class Debugger
     static Debugger& getDebugger();
     ~Debugger();
 
-    int run();
+    int run(bool is_batch_mode = false);
 
    private:
     Monitor& monitor;

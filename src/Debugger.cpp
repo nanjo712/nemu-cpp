@@ -320,8 +320,13 @@ int Debugger::cmd_handler(char* cmd)
     return 1;
 }
 
-int Debugger::run()
+int Debugger::run(bool is_batch_mode)
 {
+    if (is_batch_mode)
+    {
+        execute(-1);
+        return 0;
+    }
     while (true)
     {
         char* line = rl_gets();

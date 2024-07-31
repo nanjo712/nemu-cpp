@@ -116,6 +116,11 @@ void Monitor::execute(uint64_t n)
     }
 }
 
-void Monitor::quit() { state = State::QUIT; }
+void Monitor::quit()
+{
+    if (state != State::ABORT) state = State::QUIT;
+}
 
 void Monitor::stop() { state = State::STOP; }
+
+bool Monitor::is_bad_status() { return state == State::ABORT; }

@@ -5,6 +5,7 @@
 
 #include "Debugger/Debugger.h"
 #include "ISA/ISA_Wrapper.h"
+#include "Monitor/Monitor.h"
 
 std::string log_file;
 std::string diff_so_file;
@@ -22,7 +23,7 @@ class Nemu
         Debugger& debugger = Debugger::getDebugger();
         spdlog::info("Welcome to NEMU!");
         spdlog::info("For help, type \"help\"");
-        debugger.run();
+        debugger.run(is_batch_mode);
     }
     ~Nemu() { spdlog::info("Goodbye!"); }
 
@@ -80,5 +81,5 @@ class Nemu
 int main(int argc, char* argv[])
 {
     Nemu nemu(argc, argv);
-    return 0;
+    return Monitor::getMonitor().is_bad_status();
 }
