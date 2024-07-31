@@ -46,20 +46,49 @@ class Instruction
 
     void execute();
 
+    void lui();
     void auipc();
     void jal();
     void jalr();
 
+    void beq();
+    void bne();
+    void blt();
+    void bge();
+    void bltu();
+    void bgeu();
+
+    void lb();
+    void lh();
     void lw();
     void lbu();
-    void li();
+    void lhu();
 
     void sb();
+    void sh();
     void sw();
 
     void addi();
+    void slti();
+    void sltiu();
+    void xori();
+    void ori();
+    void andi();
+
+    void slli();
+    void srli();
+    void srai();
 
     void add();
+    void sub();
+    void sll();
+    void slt();
+    void sltu();
+    void xor_();
+    void srl();
+    void sra();
+    void or_();
+    void and_();
 
     void ebreak();
     void inv();
