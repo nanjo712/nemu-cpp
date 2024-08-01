@@ -95,6 +95,8 @@ Instruction::Instruction(Register &reg)
                    [this]() { mul(); }},
           InstInfo{"0000001 ????? ????? 001 ????? 01100 11", "mulh", R,
                    [this]() { mulh(); }},
+          InstInfo{"0000001 ????? ????? 010 ????? 01100 11", "mulhsu", R,
+                   [this]() { mulhsu(); }},
           InstInfo{"0000001 ????? ????? 011 ????? 01100 11", "mulhu", R,
                    [this]() { mulhu(); }},
           InstInfo{"0000001 ????? ????? 100 ????? 01100 11", "div", R,
@@ -341,6 +343,15 @@ void Instruction::mulh()
     int32_t rs2_val = reg.read(rs2);
     int64_t res = (int64_t)rs1_val * (int64_t)rs2_val;
     reg.write(rd, res >> 32);
+}
+
+void Instruction::mulhsu()
+{
+    int32_t rs1_val = reg.read(rs1);
+    uint32_t rs2_val = reg.read(rs2);
+    int64_t res = (int64_t)rs1_val * (int64_t)rs2_val;
+    reg.write(rd, res >> 32);
+    // It's not tested yet
 }
 
 void Instruction::mulhu()
