@@ -46,39 +46,34 @@ class Instruction
 
     void execute();
 
+    // RV32I
     void lui();
     void auipc();
     void jal();
     void jalr();
-
     void beq();
     void bne();
     void blt();
     void bge();
     void bltu();
     void bgeu();
-
     void lb();
     void lh();
     void lw();
     void lbu();
     void lhu();
-
     void sb();
     void sh();
     void sw();
-
     void addi();
     void slti();
     void sltiu();
     void xori();
     void ori();
     void andi();
-
     void slli();
     void srli();
     void srai();
-
     void add();
     void sub();
     void sll();
@@ -89,6 +84,16 @@ class Instruction
     void sra();
     void or_();
     void and_();
+
+    // RV32M
+    void mul();
+    void mulh();
+    void mulhsu();
+    void mulhu();
+    void div();
+    void divu();
+    void rem();
+    void remu();
 
     void ebreak();
     void inv();

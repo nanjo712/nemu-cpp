@@ -3,6 +3,7 @@
 #include <fmt/core.h>
 
 #include <cassert>
+#include <cstdint>
 #include <iostream>
 
 #include "ISA/riscv32/Register.h"
@@ -89,12 +90,26 @@ Instruction::Instruction(Register &reg)
                    [this]() { or_(); }},
           InstInfo{"0000000 ????? ????? 111 ????? 01100 11", "and", R,
                    [this]() { and_(); }},
+          // RV32M Extension
+          InstInfo{"0000001 ????? ????? 000 ????? 01100 11", "mul", R,
+                   [this]() { mul(); }},
+          InstInfo{"0000001 ????? ????? 001 ????? 01100 11", "mulh", R,
+                   [this]() { mulh(); }},
+          InstInfo{"0000001 ????? ????? 011 ????? 01100 11", "mulhu", R,
+                   [this]() { mulhu(); }},
+          InstInfo{"0000001 ????? ????? 100 ????? 01100 11", "div", R,
+                   [this]() { div(); }},
+          InstInfo{"0000001 ????? ????? 101 ????? 01100 11", "divu", R,
+                   [this]() { divu(); }},
+          InstInfo{"0000001 ????? ????? 110 ????? 01100 11", "rem", R,
+                   [this]() { rem(); }},
+          InstInfo{"0000001 ????? ????? 111 ????? 01100 11", "remu", R,
+                   [this]() { remu(); }},
+          // Special Instructions
           InstInfo{"0000000 00001 00000 000 00000 11100 11", "ebreak", N,
                    [this]() { ebreak(); }},
           InstInfo{"??????? ????? ????? ??? ????? ????? ??", "inv", N,
                    [this]() { inv(); }},
-          // RV32M Standard Extension
-
       })
 {
     for (auto &inst : instList)
@@ -314,6 +329,39 @@ void Instruction::sra()
 void Instruction::or_() { reg.write(rd, reg.read(rs1) | reg.read(rs2)); }
 
 void Instruction::and_() { reg.write(rd, reg.read(rs1) & reg.read(rs2)); }
+
+void Instruction::mul()
+{
+    reg.write(rd, (sword_t)reg.read(rs1) * (sword_t)reg.read(rs2));
+}
+
+void Instruction::mulh()
+{
+    int32_t rs1_val = reg.read(rs1);
+    int32_t rs2_val = reg.read(rs2);
+    int64_t res = (int64_t)rs1_val * (int64_t)rs2_val;
+    reg.write(rd, res >> 32);
+}
+
+void Instruction::mulhu()
+{
+    uint64_t res = (uint64_t)reg.read(rs1) * (uint64_t)reg.read(rs2);
+    reg.write(rd, res >> 32);
+}
+
+void Instruction::div()
+{
+    reg.write(rd, (sword_t)reg.read(rs1) / (sword_t)reg.read(rs2));
+}
+
+void Instruction::divu() { reg.write(rd, reg.read(rs1) / reg.read(rs2)); }
+
+void Instruction::rem()
+{
+    reg.write(rd, (sword_t)reg.read(rs1) % (sword_t)reg.read(rs2));
+}
+
+void Instruction::remu() { reg.write(rd, reg.read(rs1) % reg.read(rs2)); }
 
 void Instruction::ebreak()
 {
