@@ -4,6 +4,7 @@
 #include <chrono>
 #include <cstdint>
 
+#include "Utils/Ring_Buffer.h"
 #include "Utils/Utils.h"
 
 class CPU;
@@ -44,6 +45,7 @@ class Monitor
     word_t halt_ret;
     std::chrono::nanoseconds timer;
     uint64_t inst_count;
+    RingBuffer<word_t, 16> inst_buffer;
 
     Monitor();
 

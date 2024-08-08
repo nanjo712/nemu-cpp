@@ -9,6 +9,9 @@
 #include "ISA/ISA_Wrapper.h"
 #include "Memory/Memory.h"
 #include "Monitor/Monitor.h"
+#include "Utils/Disasm.h"
+#include "Utils/Ring_Buffer.h"
+#include "Utils/Utils.h"
 
 Monitor& Monitor::getMonitor()
 {
@@ -79,6 +82,13 @@ void Monitor::execute(uint64_t n)
 
     for (uint64_t i = 0; i < n; i++)
     {
+#ifdef TRACE_INSTRUCTION
+        auto pc = isa.get_reg_val("pc");
+        auto inst = mem.read(pc, sizeof(word_t));
+        auto disas_inst = disassemble(pc, (uint8_t*)&inst, sizeof(word_t));
+        std::cout << disas_inst << std::endl;
+        inst_buffer.push(inst);
+#endif
         isa.execute_one_inst();
         inst_count++;
         if (state != State::RUNNING)
@@ -109,6 +119,16 @@ void Monitor::execute(uint64_t n)
         {
             spdlog::info("Program ended.");
         }
+
+#ifdef TRACE_INSTRUCTION
+        while (!inst_buffer.empty())
+        {
+            auto inst = inst_buffer.pop();
+            auto disas_inst =
+                disassemble(halt_pc, (uint8_t*)&inst, sizeof(word_t));
+            spdlog::info(disas_inst);
+        }
+#endif
     }
     else if (state == State::QUIT)
     {

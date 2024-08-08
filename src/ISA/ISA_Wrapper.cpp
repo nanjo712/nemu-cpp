@@ -41,10 +41,6 @@ void ISA_Wrapper::execute_one_inst()
 {
     word_t pc = reg.getPC();
     word_t inst = mem.read(pc, 4);
-#ifdef TRACE_INSTRUCTION
-    auto disas_inst = disassemble(pc, (uint8_t*)&inst, 4);
-    std::cout << disas_inst << std::endl;
-#endif
     executor.execute(inst);
 };
 
