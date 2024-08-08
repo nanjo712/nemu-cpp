@@ -45,7 +45,12 @@ class Monitor
     word_t halt_ret;
     std::chrono::nanoseconds timer;
     uint64_t inst_count;
-    RingBuffer<word_t, 16> inst_buffer;
+    struct InstInfo
+    {
+        word_t pc;
+        word_t inst;
+    };
+    RingBuffer<InstInfo, 16> inst_buffer;
 
     Monitor();
 

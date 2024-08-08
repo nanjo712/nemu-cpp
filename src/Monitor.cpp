@@ -87,7 +87,7 @@ void Monitor::execute(uint64_t n)
         auto inst = mem.read(pc, sizeof(word_t));
         auto disas_inst = disassemble(pc, (uint8_t*)&inst, sizeof(word_t));
         std::cout << disas_inst << std::endl;
-        inst_buffer.push(inst);
+        inst_buffer.push(InstInfo{pc, inst});
 #endif
         isa.execute_one_inst();
         inst_count++;
@@ -125,7 +125,7 @@ void Monitor::execute(uint64_t n)
         {
             auto inst = inst_buffer.pop();
             auto disas_inst =
-                disassemble(halt_pc, (uint8_t*)&inst, sizeof(word_t));
+                disassemble(inst.pc, (uint8_t*)&inst.inst, sizeof(word_t));
             spdlog::info(disas_inst);
         }
 #endif
