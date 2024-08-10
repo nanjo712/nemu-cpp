@@ -4,7 +4,6 @@
 #include <chrono>
 #include <cstdint>
 #include <optional>
-#include <stack>
 
 #include "Utils/Elf_Parser.h"
 #include "Utils/Ring_Buffer.h"
