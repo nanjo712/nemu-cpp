@@ -4,6 +4,7 @@
 #include <chrono>
 #include <cstdint>
 
+#include "Utils/Elf_Parser.h"
 #include "Utils/Ring_Buffer.h"
 #include "Utils/Utils.h"
 
@@ -14,6 +15,7 @@ class Debugger;
 class Monitor
 {
    public:
+    static std::string elf_file;
     Memory& mem;
     ISA_Wrapper& isa;
 
@@ -51,6 +53,7 @@ class Monitor
         word_t inst;
     };
     RingBuffer<InstInfo, 16> inst_buffer;
+    SymbolTable sym_table;
 
     Monitor();
 

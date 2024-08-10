@@ -1,6 +1,7 @@
 add_library(
     Utils 
     Disasm.cpp 
+    Elf_Parser.cpp
 )
 target_link_libraries(Utils PRIVATE LLVM)
 target_include_directories(Utils PUBLIC ${NEMU_CPP_HOME}/include)

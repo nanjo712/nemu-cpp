@@ -13,6 +13,8 @@
 #include "Utils/Ring_Buffer.h"
 #include "Utils/Utils.h"
 
+std::string Monitor::elf_file = "";
+
 Monitor& Monitor::getMonitor()
 {
     static Monitor monitor;
@@ -24,6 +26,18 @@ Monitor::Monitor() : mem(Memory::getMemory()), isa(ISA_Wrapper::getISA())
     state = State::STOP;
     inst_count = 0;
     timer = std::chrono::nanoseconds(0);
+#ifdef TRACE_FUNCTION
+    auto sym_table = getFunctionSymbol(Monitor::elf_file);
+    if (sym_table.has_value())
+    {
+        this->sym_table = sym_table.value();
+        spdlog::info("Get symbol table successfully.");
+    }
+    else
+    {
+        spdlog::warn("Failed to get symbol table.");
+    }
+#endif
 }
 
 Monitor::~Monitor() {}
@@ -141,4 +155,12 @@ void Monitor::quit()
 
 void Monitor::stop() { state = State::STOP; }
 
-bool Monitor::is_bad_status() { return state == State::ABORT; }
+bool Monitor::is_bad_status()
+{
+    if (state == State::ABORT)
+    {
+        spdlog::error("NEMU exited with bad status.");
+        return true;
+    }
+    return false;
+}
