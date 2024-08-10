@@ -3,6 +3,8 @@
 
 #include <chrono>
 #include <cstdint>
+#include <optional>
+#include <stack>
 
 #include "Utils/Elf_Parser.h"
 #include "Utils/Ring_Buffer.h"
@@ -32,6 +34,9 @@ class Monitor
     void invalid_inst_handler(word_t pc);
     void ebreak_handler(word_t pc);
 
+    const std::optional<SymbolTable>& get_sym_table();
+    std::vector<std::string> call_record;
+
     bool is_bad_status();
 
    private:
@@ -53,7 +58,7 @@ class Monitor
         word_t inst;
     };
     RingBuffer<InstInfo, 16> inst_buffer;
-    SymbolTable sym_table;
+    std::optional<SymbolTable> sym_table;
 
     Monitor();
 

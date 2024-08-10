@@ -10,6 +10,7 @@
 #include "Memory/Memory.h"
 #include "Monitor/Monitor.h"
 #include "Utils/Disasm.h"
+#include "Utils/Elf_Parser.h"
 #include "Utils/Ring_Buffer.h"
 #include "Utils/Utils.h"
 
@@ -27,15 +28,10 @@ Monitor::Monitor() : mem(Memory::getMemory()), isa(ISA_Wrapper::getISA())
     inst_count = 0;
     timer = std::chrono::nanoseconds(0);
 #ifdef TRACE_FUNCTION
-    auto sym_table = getFunctionSymbol(Monitor::elf_file);
-    if (sym_table.has_value())
+    sym_table = getFunctionSymbol(elf_file);
+    if (!sym_table.has_value())
     {
-        this->sym_table = sym_table.value();
-        spdlog::info("Get symbol table successfully.");
-    }
-    else
-    {
-        spdlog::warn("Failed to get symbol table.");
+        spdlog::warn("Failed to load symbol table.");
     }
 #endif
 }
@@ -108,7 +104,6 @@ void Monitor::execute(uint64_t n)
         {
             break;
         }
-        // TODO: Update Device
     }
 
     auto end = std::chrono::steady_clock::now();
@@ -134,6 +129,12 @@ void Monitor::execute(uint64_t n)
                 auto disas_inst =
                     disassemble(inst.pc, (uint8_t*)&inst.inst, sizeof(word_t));
                 spdlog::info(disas_inst);
+            }
+#endif
+#ifdef TRACE_FUNCTION
+            for (auto& cr : call_record)
+            {
+                spdlog::info(cr);
             }
 #endif
         }
@@ -164,3 +165,5 @@ bool Monitor::is_bad_status()
     }
     return false;
 }
+
+const std::optional<SymbolTable>& Monitor::get_sym_table() { return sym_table; }

@@ -184,12 +184,63 @@ void Instruction::jal()
 {
     reg.write(rd, nextPC);
     nextPC = reg.getPC() + immJ;
+#ifdef TRACE_FUNCTION
+    Monitor &monitor = Monitor::getMonitor();
+    auto sym_table = monitor.get_sym_table();
+    if (sym_table.has_value())
+    {
+        for (auto &sym : sym_table.value())
+        {
+            if (sym.addr == nextPC)
+            {
+                monitor.call_record.push_back(fmt::format(
+                    "Call Function {} at PC: 0x{:x}", sym.name, reg.getPC()));
+                break;
+            }
+        }
+    }
+#endif
 }
 
 void Instruction::jalr()
 {
     reg.write(rd, nextPC);
     nextPC = (reg.read(rs1) + immI) & ~1;
+#ifdef TRACE_FUNCTION
+    Monitor &monitor = Monitor::getMonitor();
+    auto sym_table = monitor.get_sym_table();
+    if (sym_table.has_value())
+    {
+        // ret instruction
+        if (rd == 0 && rs1 == (word_t)reg.getRegIndex("ra") && immI == 0)
+        {
+            std::string sym_name = "";
+            for (auto &sym : sym_table.value())
+            {
+                if (sym.addr <= reg.getPC() &&
+                    reg.getPC() <= sym.size + sym.addr)
+                {
+                    sym_name = sym.name;
+                }
+            }
+            monitor.call_record.push_back(fmt::format(
+                "Return in Function {} at PC: 0x{:x}", sym_name, reg.getPC()));
+        }
+        else
+        {
+            for (auto &sym : sym_table.value())
+            {
+                if (sym.addr == nextPC)
+                {
+                    monitor.call_record.push_back(
+                        fmt::format("Call Function {} at PC: 0x{:x}", sym.name,
+                                    reg.getPC()));
+                    break;
+                }
+            }
+        }
+    }
+#endif
 }
 
 void Instruction::beq()
