@@ -12,6 +12,7 @@ class Memory
     using paddr_t =
         std::conditional_t<MEMORY_SIZE + MEMORY_BASE <= 0x100000000ul, uint32_t,
                            uint64_t>;
+    word_t instructionFetch(paddr_t addr);
     word_t read(paddr_t addr, int len);
     void write(paddr_t addr, word_t data, int len);
     static Memory& getMemory();

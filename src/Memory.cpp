@@ -43,8 +43,18 @@ uint8_t* Memory::getHostMemAddr(paddr_t paddr)
     return physicalMemory + (paddr - lower_bound);
 }
 
+word_t Memory::instructionFetch(paddr_t addr)
+{
+    auto hostMemAddr = getHostMemAddr(addr);
+    return hostMemAddr[0] | (hostMemAddr[1] << 8) | (hostMemAddr[2] << 16) |
+           (hostMemAddr[3] << 24);
+}
+
 word_t Memory::read(paddr_t addr, int len)
 {
+#ifdef TRACE_MEMORY
+    spdlog::info("Memory read: addr = 0x{:08x}, len = {}", addr, len);
+#endif
     if (len != 1 && len != 2 && len != 4 && len != 8)
     {
         spdlog::error("Invalid read length: {}", len);
@@ -62,6 +72,10 @@ word_t Memory::read(paddr_t addr, int len)
 
 void Memory::write(paddr_t addr, word_t data, int len)
 {
+#ifdef TRACE_MEMORY
+    spdlog::info("Memory write: addr = 0x{:08x}, data = 0x{:08x}, len = {}",
+                 addr, data, len);
+#endif
     if (len != 1 && len != 2 && len != 4 && len != 8)
     {
         spdlog::error("Invalid write length: {}", len);

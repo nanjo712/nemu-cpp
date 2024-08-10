@@ -38,7 +38,7 @@ void Monitor::trap_handler(State s, word_t pc, word_t ret)
 void Monitor::invalid_inst_handler(word_t pc)
 {
     std::cout << fmt::format("Invalid instruction at {0:x}\n", pc);
-    word_t inst = mem.read(pc, 4);
+    word_t inst = mem.instructionFetch(pc);
     std::cout << fmt::format("Instruction: \n BIN:{0:b}\n HEX:{0:x}\n", inst);
     trap_handler(State::ABORT, pc, -1);
 }
@@ -53,7 +53,6 @@ void Monitor::ebreak_handler(word_t pc)
 void Monitor::statistics()
 {
     spdlog::info("Execution time: {} ns", timer.count());
-    // std::cout << "Instruction count: " << inst_count << std::endl;
     spdlog::info("Instruction count: {}", inst_count);
     if (timer.count() > 0)
         spdlog::info("Instruction per s: {}", inst_count * 1e9 / timer.count());
@@ -84,7 +83,7 @@ void Monitor::execute(uint64_t n)
     {
 #ifdef TRACE_INSTRUCTION
         auto pc = isa.get_reg_val("pc");
-        auto inst = mem.read(pc, sizeof(word_t));
+        auto inst = mem.instructionFetch(pc);
         auto disas_inst = disassemble(pc, (uint8_t*)&inst, sizeof(word_t));
         std::cout << disas_inst << std::endl;
         inst_buffer.push(InstInfo{pc, inst});
@@ -114,21 +113,20 @@ void Monitor::execute(uint64_t n)
         if (state == State::ABORT)
         {
             spdlog::error("Program aborted.");
+#ifdef TRACE_INSTRUCTION
+            while (!inst_buffer.empty())
+            {
+                auto inst = inst_buffer.pop();
+                auto disas_inst =
+                    disassemble(inst.pc, (uint8_t*)&inst.inst, sizeof(word_t));
+                spdlog::info(disas_inst);
+            }
+#endif
         }
         else if (state == State::END)
         {
             spdlog::info("Program ended.");
         }
-
-#ifdef TRACE_INSTRUCTION
-        while (!inst_buffer.empty())
-        {
-            auto inst = inst_buffer.pop();
-            auto disas_inst =
-                disassemble(inst.pc, (uint8_t*)&inst.inst, sizeof(word_t));
-            spdlog::info(disas_inst);
-        }
-#endif
     }
     else if (state == State::QUIT)
     {

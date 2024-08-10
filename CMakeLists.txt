@@ -21,6 +21,7 @@ add_definitions(-DMEMORY_BASE=0x80000000)
 add_definitions(-DMEMORY_SIZE=0x8000000)
 add_definitions(-DRESET_PC_OFFSET=0x0)
 add_definitions(-DTRACE_INSTRUCTION)
+add_definitions(-DTRACE_MEMORY)
 add_definitions(-DCHECK_WATCHPOINT)
 
 add_subdirectory(src)

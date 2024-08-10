@@ -40,7 +40,7 @@ ISA_Wrapper::~ISA_Wrapper() {};
 void ISA_Wrapper::execute_one_inst()
 {
     word_t pc = reg.getPC();
-    word_t inst = mem.read(pc, 4);
+    word_t inst = mem.instructionFetch(pc);
     executor.execute(inst);
 };
 
