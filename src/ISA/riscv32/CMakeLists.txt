@@ -1,8 +1,6 @@
 add_library(
     ISA_RISCV32
-    Register.cpp
-    Instruction.cpp
-    Reset.cpp
+    EmuCore.cpp
 )
 target_include_directories(
     ISA_RISCV32

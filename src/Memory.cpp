@@ -43,13 +43,6 @@ uint8_t* Memory::getHostMemAddr(paddr_t paddr)
     return physicalMemory + (paddr - lower_bound);
 }
 
-word_t Memory::instructionFetch(paddr_t addr)
-{
-    auto hostMemAddr = getHostMemAddr(addr);
-    return hostMemAddr[0] | (hostMemAddr[1] << 8) | (hostMemAddr[2] << 16) |
-           (hostMemAddr[3] << 24);
-}
-
 word_t Memory::read(paddr_t addr, int len)
 {
 #ifdef TRACE_MEMORY
