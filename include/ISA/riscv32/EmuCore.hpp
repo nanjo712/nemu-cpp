@@ -23,7 +23,7 @@ class EmuCore : public Core<EmuCore>
     ~EmuCore();
 
    private:
-    static constexpr RISCV32::word_t pc_init = 0x80000000;
+    static constexpr word_t pc_init = 0x80000000;
     using Handler = std::function<void()>;
 
     friend class Core<EmuCore>;

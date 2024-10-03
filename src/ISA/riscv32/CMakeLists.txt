@@ -7,4 +7,10 @@ target_include_directories(
     PUBLIC
     ${NEMU_CPP_HOME}/include
 )
+target_link_libraries(
+    ISA_RISCV32
+    PRIVATE 
+    Utils
+)
+
 

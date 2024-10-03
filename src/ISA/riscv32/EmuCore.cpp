@@ -2,8 +2,11 @@
 
 #include <spdlog/spdlog.h>
 
+#include <iostream>
+
 #include "Exception/NEMUException.hpp"
 #include "ISA/riscv32/Common.hpp"
+#include "Utils/Disasm.h"
 #include "Utils/Utils.h"
 
 namespace RISCV32
@@ -237,6 +240,7 @@ void EmuCore::RegisterFile::reset() { x[0] = 0; }
 
 EmuCore::EmuCore(Memory& memory) : memory(memory), null_operand(0), pc(pc_init)
 {
+    init_disasm("riscv32-pc-linux-gnu");
 }
 
 EmuCore::~EmuCore() {}
@@ -379,6 +383,9 @@ void EmuCore::single_instruction_impl()
     auto next_pc = pc + 4;
     auto handler = decode(inst, next_pc);
     handler();
+#ifdef TRACE_INSTRUCTION
+    std::cout << disassemble(pc, (uint8_t*)&inst, sizeof(word_t)) << std::endl;
+#endif
     pc = next_pc;
 }
 
