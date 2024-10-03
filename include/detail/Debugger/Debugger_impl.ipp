@@ -186,6 +186,7 @@ Debugger<T>::Debugger(Monitor<T>& monitor)
           {"help", "Print help", &Debugger<T>::cmd_help},
       })
 {
+    regex_init(regexs);
     for (int i = 0; i < 32; i++)
     {
         watchpoint_free_list.push_back(i);

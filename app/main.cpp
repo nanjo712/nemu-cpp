@@ -18,22 +18,20 @@ bool is_diff = false;
 class Nemu
 {
    public:
-    Nemu()
+    Nemu(int argc = 0, char* argv[] = nullptr)
     {
-        std::cout << "Hello, World!" << std::endl;
         spdlog::info("Build time: {}, {}", __TIME__, __DATE__);
-        std::cout << "Hello, World!" << std::endl;
-        // parse_args(argc, argv);
+        parse_args(argc, argv);
         spdlog::info("Welcome to NEMU!");
         spdlog::info("For help, type \"help\"");
 
         Memory memory;
         RISCV32::EmuCore core(memory);
-        Monitor<RISCV32::EmuCore> monitor(core, memory);
-        Debugger<RISCV32::EmuCore> debugger(monitor);
+        Monitor monitor(core, memory);
+        Debugger debugger(monitor);
         debugger.run(is_batch_mode);
     }
-    ~Nemu() { printf("Exit nemu"); }
+    ~Nemu() { spdlog::info("Exit NEMU"); }
 
    private:
     int parse_args(int argc, char* argv[])
@@ -90,11 +88,4 @@ class Nemu
     }
 };
 
-int main(int argc, char* argv[])
-{
-    std::cout << "Hello, World!" << std::endl;
-    std::cout << "Hello, World!" << std::endl;
-    std::cout << "Hello, World!" << std::endl;
-    spdlog::info("fuck!");
-    Nemu nemu;
-}
+int main(int argc, char* argv[]) { Nemu nemu(argc, argv); }

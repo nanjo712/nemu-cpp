@@ -10,11 +10,24 @@
 #include "Monitor_decl.hpp"
 
 template <typename T>
+bool Monitor<T>::using_custom_firmware = false;
+
+template <typename T>
 Monitor<T>::Monitor(Core<T> &core, Memory &memory) : core(core), memory(memory)
 {
     state = State::STOP;
     inst_count = 0;
     timer = std::chrono::nanoseconds(0);
+
+    if (!using_custom_firmware)
+    {
+        auto &firmware = T::builtin_firmware;
+        for (size_t i = 0; i < firmware.size(); i++)
+        {
+            memory.write(MEMORY_BASE + i * sizeof(word_t), firmware[i],
+                         sizeof(word_t));
+        }
+    }
 }
 
 template <typename T>
@@ -113,14 +126,20 @@ void Monitor<T>::print_registers()
 {
     for (int i = 0; i < 32; i++)
     {
-        std::cout << spdlog::fmt_lib::format("x{0}: {1:x}", i,
+        std::cout << spdlog::fmt_lib::format("x{0}: {1:x}\n", i,
                                              core.debug_get_reg_val(i));
     }
+    std::cout << spdlog::fmt_lib::format("pc: {0:x}\n", core.debug_get_pc());
 }
 
 template <typename T>
 auto Monitor<T>::get_reg_val(std::string_view reg_name)
 {
+    if (reg_name == "pc")
+    {
+        return core.debug_get_pc();
+    }
+
     auto reg_num = core.debug_get_reg_index(reg_name);
     return core.debug_get_reg_val(reg_num);
 }

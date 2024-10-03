@@ -18,6 +18,7 @@ class Monitor
     using sword_t = typename T::sword_t;
 
    public:
+    static bool using_custom_firmware;
     Monitor(Core<T> &core, Memory &memory);
     ~Monitor();
 

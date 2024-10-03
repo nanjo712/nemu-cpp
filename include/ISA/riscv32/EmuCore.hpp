@@ -17,6 +17,7 @@ class EmuCore : public Core<EmuCore>
    public:
     using word_t = RISCV32::word_t;
     using sword_t = RISCV32::sword_t;
+    constexpr static auto builtin_firmware = RISCV32::builtin_firmware;
 
     EmuCore(Memory& memory);
     ~EmuCore();
@@ -37,8 +38,8 @@ class EmuCore : public Core<EmuCore>
         void reset();
     } register_file;
 
-    word_t immGenerate(word_t inst, InstructionType type);
-    Handler decode(word_t inst);
+    word_t imm_generate(word_t inst, InstructionType type);
+    Handler decode(word_t inst, word_t& next_pc);
 
     void reset_impl();
     void single_instruction_impl();

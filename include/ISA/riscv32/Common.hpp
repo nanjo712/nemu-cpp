@@ -13,10 +13,10 @@ using sword_t = int32_t;
 
 constexpr int32_t reg_num = 32;
 
-// constexpr std::array<std::string_view, 32> reg_name_list = {
-//     "zero", "ra", "sp", "gp", "tp",  "t0",  "t1", "t2", "s0", "s1", "a0",
-//     "a1",   "a2", "a3", "a4", "a5",  "a6",  "a7", "s2", "s3", "s4", "s5",
-//     "s6",   "s7", "s8", "s9", "s10", "s11", "t3", "t4", "t5", "t6"};
+constexpr std::array<std::string_view, 32> reg_name_list = {
+    "zero", "ra", "sp", "gp", "tp",  "t0",  "t1", "t2", "s0", "s1", "a0",
+    "a1",   "a2", "a3", "a4", "a5",  "a6",  "a7", "s2", "s3", "s4", "s5",
+    "s6",   "s7", "s8", "s9", "s10", "s11", "t3", "t4", "t5", "t6"};
 
 enum InstructionType
 {
@@ -125,6 +125,14 @@ enum OpcodeMap
     OP = 0b0110011,
     MISC_MEM = 0b0001111,
     SYSTEM = 0b1110011
+};
+
+constexpr std::array<uint32_t, 5> builtin_firmware = {
+    0x00000297,  // auipc t0,0
+    0x00028823,  // sb  zero,16(t0)
+    0x0102c503,  // lbu a0,16(t0)
+    0x00100073,  // ebreak (used as nemu_trap)
+    0xdeadbeef,  // some data
 };
 
 }  // namespace RISCV32
