@@ -31,4 +31,22 @@ void Core<T>::single_instruction()
     static_cast<T*>(this)->single_instruction_impl();
 }
 
+template <typename T>
+auto Core<T>::debug_get_reg_val(int reg_num)
+{
+    return static_cast<T*>(this)->debug_get_reg_val_impl(reg_num);
+}
+
+template <typename T>
+auto Core<T>::debug_get_pc()
+{
+    return static_cast<T*>(this)->pc;
+}
+
+template <typename T>
+auto Core<T>::debug_get_reg_index(std::string_view reg_name)
+{
+    return static_cast<T*>(this)->debug_get_reg_index_impl(reg_name);
+}
+
 #endif  // CORE_IMPL_IPP_

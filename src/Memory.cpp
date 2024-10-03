@@ -5,20 +5,15 @@
 #include <cassert>
 #include <random>
 
-Memory& Memory::getMemory()
-{
-    static Memory memory;
-    return memory;
-}
-
 Memory::Memory()
+    : physicalMemory(std::make_unique<std::array<uint8_t, MEMORY_SIZE>>())
 {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> dis(0, 255);
     for (int i = 0; i < MEMORY_SIZE; i++)
     {
-        physicalMemory[i] = dis(gen);
+        physicalMemory->at(i) = dis(gen);
     }
     spdlog::info("Memory initialized with random data.");
     spdlog::info("Memory size: {} bytes", MEMORY_SIZE);
@@ -40,7 +35,7 @@ uint8_t* Memory::getHostMemAddr(paddr_t paddr)
         spdlog::error("Physical address 0x{:08x} out of range.", paddr);
         return nullptr;
     }
-    return physicalMemory + (paddr - lower_bound);
+    return &(physicalMemory->at(0)) + (paddr - lower_bound);
 }
 
 word_t Memory::read(paddr_t addr, int len)
@@ -71,7 +66,7 @@ void Memory::write(paddr_t addr, word_t data, int len)
 #endif
     if (len != 1 && len != 2 && len != 4 && len != 8)
     {
-        spdlog::error("Invalid write length: {}", len);
+        // spdlog::error("Invalid write length: {}", len);
         assert(false);
     }
 

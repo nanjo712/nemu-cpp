@@ -5,6 +5,14 @@ add_executable(
 target_link_libraries(
     ${PROJECT_NAME}
     PRIVATE
-    Monitor
-    Debugger
+    Utils
+    Memory
+    ISA_RISCV32
+    ${Readline_LIBRARY}
+    spdlog
+)
+target_include_directories(
+    ${PROJECT_NAME}
+    PUBLIC
+    ${NEMU_CPP_HOME}/include
 )

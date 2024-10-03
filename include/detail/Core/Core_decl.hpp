@@ -1,6 +1,7 @@
 #ifndef CORE_DECL_H_
 #define CORE_DECL_H_
 
+#include <string_view>
 template <typename T>
 class Core
 {
@@ -11,7 +12,9 @@ class Core
     void execute_one_inst();
     void reset();
 
-    void debug_get_reg_val();
+    auto debug_get_reg_index(std::string_view reg_num);
+    auto debug_get_reg_val(int reg_num);
+    auto debug_get_pc();
 
    private:
     void single_instruction();

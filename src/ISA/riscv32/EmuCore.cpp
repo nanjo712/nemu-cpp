@@ -187,6 +187,8 @@ std::function<void()> op_handler(word_t& dest, word_t& src1, word_t& src2,
 
 EmuCore::RegisterFile::RegisterFile() { x[0] = 0; }
 
+void EmuCore::RegisterFile::reset() { x[0] = 0; }
+
 EmuCore::EmuCore(Memory& memory) : memory(memory), null_operand(0), pc(pc_init)
 {
 }
@@ -327,6 +329,20 @@ void EmuCore::single_instruction_impl()
     auto inst = memory.read(pc, 4);
     auto handler = decode(inst);
     handler();
+}
+
+word_t EmuCore::debug_get_reg_val_impl(int reg_num)
+{
+    return register_file.x[reg_num];
+}
+
+word_t EmuCore::debug_get_pc_impl() { return pc; }
+
+word_t EmuCore::debug_get_reg_index_impl(std::string_view reg_name)
+{
+    // for (int i = 0; i < 32; i++)
+    //     if (reg_name == RISCV32::reg_name_list[i]) return i;
+    return -1;
 }
 
 }  // namespace RISCV32

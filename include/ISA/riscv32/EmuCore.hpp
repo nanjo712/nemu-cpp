@@ -3,6 +3,7 @@
 
 #include <array>
 #include <functional>
+#include <string_view>
 
 #include "Core/Core.hpp"
 #include "ISA/riscv32/Common.hpp"
@@ -13,14 +14,17 @@ namespace RISCV32
 
 class EmuCore : public Core<EmuCore>
 {
-    static constexpr word_t pc_init = 0x80000000;
-    using Handler = std::function<void()>;
-
    public:
+    using word_t = RISCV32::word_t;
+    using sword_t = RISCV32::sword_t;
+
     EmuCore(Memory& memory);
     ~EmuCore();
 
    private:
+    static constexpr RISCV32::word_t pc_init = 0x80000000;
+    using Handler = std::function<void()>;
+
     friend class Core<EmuCore>;
     Memory& memory;
     word_t null_operand;
@@ -38,7 +42,9 @@ class EmuCore : public Core<EmuCore>
 
     void reset_impl();
     void single_instruction_impl();
-    void debug_get_reg_val_impl();
+    word_t debug_get_pc_impl();
+    word_t debug_get_reg_val_impl(int reg_num);
+    word_t debug_get_reg_index_impl(std::string_view reg_name);
 };
 
 }  // namespace RISCV32

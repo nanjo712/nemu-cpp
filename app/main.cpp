@@ -1,11 +1,13 @@
 #include <getopt.h>
 #include <spdlog/spdlog.h>
 
+#include <memory>
 #include <string>
 
-#include "Debugger/Debugger.h"
-#include "ISA/ISA_Wrapper.h"
-#include "Monitor/Monitor.h"
+#include "Debugger/Debugger.hpp"
+#include "ISA/riscv32/EmuCore.hpp"
+#include "Memory/Memory.h"
+#include "Monitor/Monitor.hpp"
 
 std::string log_file;
 std::string diff_so_file;
@@ -16,16 +18,22 @@ bool is_diff = false;
 class Nemu
 {
    public:
-    Nemu(int argc, char* argv[])
+    Nemu()
     {
+        std::cout << "Hello, World!" << std::endl;
         spdlog::info("Build time: {}, {}", __TIME__, __DATE__);
-        parse_args(argc, argv);
-        Debugger& debugger = Debugger::getDebugger();
+        std::cout << "Hello, World!" << std::endl;
+        // parse_args(argc, argv);
         spdlog::info("Welcome to NEMU!");
         spdlog::info("For help, type \"help\"");
+
+        Memory memory;
+        RISCV32::EmuCore core(memory);
+        Monitor<RISCV32::EmuCore> monitor(core, memory);
+        Debugger<RISCV32::EmuCore> debugger(monitor);
         debugger.run(is_batch_mode);
     }
-    ~Nemu() { spdlog::info("Exit nemu"); }
+    ~Nemu() { printf("Exit nemu"); }
 
    private:
     int parse_args(int argc, char* argv[])
@@ -57,10 +65,10 @@ class Nemu
                     diff_so_file = optarg;
                     break;
                 case 'e':
-                    Monitor::elf_file = optarg;
+                    // Monitor::elf_file = optarg;
                     break;
                 case 1:
-                    ISA_Wrapper::img_file = optarg;
+                    // ISA_Wrapper::img_file = optarg;
                     return 0;
                 default:
                     print_usage();
@@ -84,6 +92,9 @@ class Nemu
 
 int main(int argc, char* argv[])
 {
-    Nemu nemu(argc, argv);
-    return Monitor::getMonitor().is_bad_status();
+    std::cout << "Hello, World!" << std::endl;
+    std::cout << "Hello, World!" << std::endl;
+    std::cout << "Hello, World!" << std::endl;
+    spdlog::info("fuck!");
+    Nemu nemu;
 }

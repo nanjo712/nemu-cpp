@@ -1,5 +1,7 @@
-#ifndef DEBUGGER_H_
-#define DEBUGGER_H_
+#ifndef DEBUGGER_DECL_HPP_
+#define DEBUGGER_DECL_HPP_
+
+#include <regex.h>
 
 #include <array>
 #include <cstdint>
@@ -8,24 +10,43 @@
 #include <string>
 #include <vector>
 
-class ISA_Wrapper;
-class Memory;
-class Monitor;
+#include "Monitor/Monitor.hpp"
+
+enum TOKEN_TYPE
+{
+    TK_EQ,
+    TK_AND,
+    TK_ADD,
+    TK_SUB,
+    TK_MUL,
+    TK_DIV,
+    TK_NUMBER,
+    TK_LEFT_BRACKET = 256,
+    TK_RIGHT_BRACKET,
+    TK_REGISTER,
+    TK_HEX,
+    /* TODO: Add more token types */
+    TK_NOTYPE,
+
+};
+
+struct Token
+{
+    TOKEN_TYPE type;
+    std::string str;
+};
+
+template <typename T>
 class Debugger
 {
    public:
-    Debugger(const Debugger&) = delete;
-    Debugger& operator=(const Debugger&) = delete;
-    Debugger(Debugger&&) = delete;
-    Debugger& operator=(Debugger&&) = delete;
-
-    static Debugger& getDebugger();
+    Debugger(Monitor<T>& monitor);
     ~Debugger();
 
     int run(bool is_batch_mode = false);
 
    private:
-    Monitor& monitor;
+    Monitor<T>& monitor;
 
     struct Command
     {
@@ -43,7 +64,6 @@ class Debugger
     std::list<int> watchpoint_free_list;
     std::list<int> watchpoint_used_list;
 
-    Debugger();
     int cmd_c();
     int cmd_info();
     int cmd_si();
@@ -57,7 +77,10 @@ class Debugger
     int cmd_handler(char* cmd);
 
     bool check_watchpoint();
+
     void execute(uint64_t step);
+    uint32_t eval(int p, int q, std::vector<Token> tokens);
+    uint32_t evaluate(std::string expr, bool& success);
 };
 
 #endif
