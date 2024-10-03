@@ -307,8 +307,15 @@ EmuCore::Handler EmuCore::decode(word_t inst, word_t& next_pc)
             return op_handler(dest, src1, src2, inst_text.r_inst.funct7,
                               inst_text.r_inst.funct3);
         }
-        case OpcodeMap::MISC_MEM:
         case OpcodeMap::SYSTEM:
+        {
+            auto imm = imm_generate(inst, I_TYPE);
+            if (imm == 1)
+            {
+                return []() { throw ebreak_exception(); };
+            }
+        }
+        case OpcodeMap::MISC_MEM:
         default:
             throw invalid_instruction();
     }
