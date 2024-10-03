@@ -15,8 +15,15 @@ int difftest_port;
 bool is_batch_mode = false;
 bool is_diff = false;
 
+template <typename T>
 class Nemu
 {
+   private:
+    std::unique_ptr<T> core;
+    std::unique_ptr<Memory> memory;
+    std::unique_ptr<Monitor<T>> monitor;
+    std::unique_ptr<Debugger<T>> debugger;
+
    public:
     Nemu(int argc = 0, char* argv[] = nullptr)
     {
@@ -25,13 +32,14 @@ class Nemu
         spdlog::info("Welcome to NEMU!");
         spdlog::info("For help, type \"help\"");
 
-        Memory memory;
-        RISCV32::EmuCore core(memory);
-        Monitor monitor(core, memory);
-        Debugger debugger(monitor);
-        debugger.run(is_batch_mode);
+        memory = std::make_unique<Memory>();
+        core = std::make_unique<T>(*memory);
+        monitor = std::make_unique<Monitor<T>>(*core, *memory);
+        debugger = std::make_unique<Debugger<T>>(*monitor);
     }
     ~Nemu() { spdlog::info("Exit NEMU"); }
+
+    int run() { return debugger->run(is_batch_mode); }
 
    private:
     int parse_args(int argc, char* argv[])
@@ -88,4 +96,8 @@ class Nemu
     }
 };
 
-int main(int argc, char* argv[]) { Nemu nemu(argc, argv); }
+int main(int argc, char* argv[])
+{
+    Nemu<RISCV32::EmuCore> nemu(argc, argv);
+    return nemu.run();
+}

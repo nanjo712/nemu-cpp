@@ -33,16 +33,13 @@ uint8_t* Memory::getHostMemAddr(paddr_t paddr)
     if (!inRange(paddr))
     {
         spdlog::error("Physical address 0x{:08x} out of range.", paddr);
-        return nullptr;
+        assert(false);
     }
     return &(physicalMemory->at(0)) + (paddr - lower_bound);
 }
 
 word_t Memory::read(paddr_t addr, int len)
 {
-#ifdef TRACE_MEMORY
-    spdlog::info("Memory read: addr = 0x{:08x}, len = {}", addr, len);
-#endif
     if (len != 1 && len != 2 && len != 4 && len != 8)
     {
         spdlog::error("Invalid read length: {}", len);
@@ -60,13 +57,9 @@ word_t Memory::read(paddr_t addr, int len)
 
 void Memory::write(paddr_t addr, word_t data, int len)
 {
-#ifdef TRACE_MEMORY
-    spdlog::info("Memory write: addr = 0x{:08x}, data = 0x{:08x}, len = {}",
-                 addr, data, len);
-#endif
     if (len != 1 && len != 2 && len != 4 && len != 8)
     {
-        // spdlog::error("Invalid write length: {}", len);
+        spdlog::error("Invalid write length: {}", len);
         assert(false);
     }
 

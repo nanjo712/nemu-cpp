@@ -133,6 +133,7 @@ constexpr std::array<uint32_t, 5> builtin_firmware = {
     0x0102c503,  // lbu a0,16(t0)
     0x00100073,  // ebreak (used as nemu_trap)
     0xdeadbeef,  // some data
+
 };
 
 }  // namespace RISCV32

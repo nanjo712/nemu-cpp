@@ -476,18 +476,25 @@ int Debugger<T>::run(bool is_batch_mode)
     if (is_batch_mode)
     {
         execute(-1);
-        return 0;
+        return monitor.is_bad_status();
     }
-    while (true)
+    try
     {
-        char* line = rl_gets();
-        if (line == nullptr)
+        while (true)
         {
-            break;
+            char* line = rl_gets();
+            if (line == nullptr)
+            {
+                break;
+            }
+            if (cmd_handler(line) < 0) break;
         }
-        if (cmd_handler(line) < 0) break;
     }
-    return 0;
+    catch (program_halt& e)
+    {
+        spdlog::info("Program halted");
+    }
+    return monitor.is_bad_status();
 }
 
 template <typename T>

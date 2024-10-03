@@ -3,6 +3,7 @@
 
 #include <spdlog/spdlog.h>
 
+#include <exception>
 #include <iostream>
 #include <string_view>
 
@@ -38,11 +39,11 @@ Monitor<T>::~Monitor()
 template <typename T>
 void Monitor<T>::invalid_inst_handler(word_t pc)
 {
-    word_t inst [[maybe_unused]] = memory.read(pc, sizeof(word_t));
+    word_t inst = memory.read(pc, sizeof(word_t));
     spdlog::error("Invalid instruction at PC = {0:x}", pc);
     spdlog::error("Instrution: \n BIN:{0:b}\n HEX:{0:x}", inst);
     halt_pc = pc;
-    state = State::END;
+    state = State::ABORT;
 }
 
 template <typename T>
@@ -51,7 +52,7 @@ void Monitor<T>::ebreak_handler(word_t pc)
     halt_pc = pc;
     halt_ret = core.debug_get_reg_val(10);
     spdlog::info("EBREAK at PC = {0:x}", pc);
-    state = State::END;
+    state = halt_ret == 0 ? State::END : State::ABORT;
 }
 
 template <typename T>
@@ -97,6 +98,12 @@ void Monitor<T>::execute(uint64_t n)
             ebreak_handler(core.debug_get_pc());
             break;
         }
+        catch (std::exception &e)
+        {
+            spdlog::error("Exception: {}", e.what());
+            state = State::ABORT;
+            break;
+        }
         inst_count++;
     }
 
@@ -105,14 +112,9 @@ void Monitor<T>::execute(uint64_t n)
     timer = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
 
     if (state == State::RUNNING)
-    {
         state = State::STOP;
-    }
     else if (state == State::END || state == State::ABORT)
-    {
         statistics();
-        throw program_halt();
-    }
 }
 
 template <typename T>
@@ -150,4 +152,9 @@ auto Monitor<T>::mem_read(word_t addr, size_t len)
     return memory.read(addr, len);
 }
 
+template <typename T>
+bool Monitor<T>::is_bad_status()
+{
+    return state == State::ABORT;
+}
 #endif  // MONITOR_IMPL_IPP_

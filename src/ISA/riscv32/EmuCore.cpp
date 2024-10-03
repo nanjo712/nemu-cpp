@@ -1,5 +1,7 @@
 #include "ISA/riscv32/EmuCore.hpp"
 
+#include <spdlog/spdlog.h>
+
 #include "Exception/NEMUException.hpp"
 #include "ISA/riscv32/Common.hpp"
 #include "Utils/Utils.h"
@@ -55,19 +57,47 @@ std::function<void()> load_handler(word_t& dest, word_t& src1, word_t imm,
     {
         case LB:
             return [&memory, &dest, &src1, imm]()
-            { dest = sign_extend(memory.read(src1 + imm, 1), 8); };
+            {
+                dest = sign_extend(memory.read(src1 + imm, 1), 8);
+#ifdef TRACE_MEMORY
+                spdlog::info("Load byte: 0x{:08x} -> x{}", src1 + imm, dest);
+#endif
+            };
         case LH:
             return [&memory, &dest, &src1, imm]()
-            { dest = sign_extend(memory.read(src1 + imm, 2), 16); };
+            {
+                dest = sign_extend(memory.read(src1 + imm, 2), 16);
+#ifdef TRACE_MEMORY
+                spdlog::info("Load half word: 0x{:08x} -> x{}", src1 + imm,
+                             dest);
+#endif
+            };
         case LW:
             return [&memory, &dest, &src1, imm]()
-            { dest = memory.read(src1 + imm, 4); };
+            {
+                dest = memory.read(src1 + imm, 4);
+#ifdef TRACE_MEMORY
+                spdlog::info("Load word: 0x{:08x} -> x{}", src1 + imm, dest);
+#endif
+            };
         case LBU:
             return [&memory, &dest, &src1, imm]()
-            { dest = memory.read(src1 + imm, 1); };
+            {
+                dest = memory.read(src1 + imm, 1);
+#ifdef TRACE_MEMORY
+                spdlog::info("Load unsigned byte: 0x{:08x} -> x{}", src1 + imm,
+                             dest);
+#endif
+            };
         case LHU:
             return [&memory, &dest, &src1, imm]()
-            { dest = memory.read(src1 + imm, 2); };
+            {
+#ifdef TRACE_MEMORY
+                spdlog::info("Load unsigned half word: 0x{:08x} -> x{}",
+                             src1 + imm, dest);
+#endif
+                dest = memory.read(src1 + imm, 2);
+            };
         default:
             throw invalid_instruction();
     }
@@ -86,13 +116,29 @@ std::function<void()> store_handler(word_t& src1, word_t& src2, word_t imm,
     {
         case SB:
             return [&memory, &src1, &src2, imm]()
-            { memory.write(src1 + imm, src2, 1); };
+            {
+                memory.write(src1 + imm, src2, 1);
+#ifdef TRACE_MEMORY
+                spdlog::info("Store byte: 0x{:08x} <- x{}", src1 + imm, src2);
+#endif
+            };
         case SH:
             return [&memory, &src1, &src2, imm]()
-            { memory.write(src1 + imm, src2, 2); };
+            {
+                memory.write(src1 + imm, src2, 2);
+#ifdef TRACE_MEMORY
+                spdlog::info("Store half word: 0x{:08x} <- x{}", src1 + imm,
+                             src2);
+#endif
+            };
         case SW:
             return [&memory, &src1, &src2, imm]()
-            { memory.write(src1 + imm, src2, 4); };
+            {
+                memory.write(src1 + imm, src2, 4);
+#ifdef TRACE_MEMORY
+                spdlog::info("Store word: 0x{:08x} <- x{}", src1 + imm, src2);
+#endif
+            };
         default:
             throw invalid_instruction();
     }
@@ -232,19 +278,19 @@ EmuCore::Handler EmuCore::decode(word_t inst, word_t& next_pc)
     {
         case OpcodeMap::LUI:
         {
-            auto& dest = register_file.x[inst_text.u_inst.rd];
+            auto& dest = register_file.x.at(inst_text.u_inst.rd);
             auto imm = imm_generate(inst, U_TYPE);
             return [&dest, imm]() { dest = imm; };
         }
         case OpcodeMap::AUIPC:
         {
-            auto& dest = register_file.x[inst_text.u_inst.rd];
+            auto& dest = register_file.x.at(inst_text.u_inst.rd);
             auto imm = imm_generate(inst, U_TYPE) + pc;
             return [&dest, imm]() { dest = imm; };
         }
         case OpcodeMap::JAL:
         {
-            auto& dest = register_file.x[inst_text.j_inst.rd];
+            auto& dest = register_file.x.at(inst_text.j_inst.rd);
             auto& pc = this->pc;
             auto imm = imm_generate(inst, J_TYPE);
             return [&dest, &pc, &next_pc, imm]()
@@ -255,8 +301,8 @@ EmuCore::Handler EmuCore::decode(word_t inst, word_t& next_pc)
         }
         case OpcodeMap::JALR:
         {
-            auto& dest = register_file.x[inst_text.i_inst.rd];
-            auto& src1 = register_file.x[inst_text.i_inst.rs1];
+            auto& dest = register_file.x.at(inst_text.i_inst.rd);
+            auto& src1 = register_file.x.at(inst_text.i_inst.rs1);
             auto imm = imm_generate(inst, I_TYPE);
             return [&dest, &src1, &next_pc, imm]()
             {
@@ -266,8 +312,8 @@ EmuCore::Handler EmuCore::decode(word_t inst, word_t& next_pc)
         }
         case OpcodeMap::BRANCH:
         {
-            auto& src1 = register_file.x[inst_text.b_inst.rs1];
-            auto& src2 = register_file.x[inst_text.b_inst.rs2];
+            auto& src1 = register_file.x.at(inst_text.b_inst.rs1);
+            auto& src2 = register_file.x.at(inst_text.b_inst.rs2);
             auto& pc = this->pc;
             auto imm = imm_generate(inst, B_TYPE);
             auto compare = branch_handler(src1, src2, inst_text.b_inst.funct3);
@@ -278,32 +324,32 @@ EmuCore::Handler EmuCore::decode(word_t inst, word_t& next_pc)
         }
         case OpcodeMap::LOAD:
         {
-            auto& dest = register_file.x[inst_text.i_inst.rd];
-            auto& src1 = register_file.x[inst_text.i_inst.rs1];
+            auto& dest = register_file.x.at(inst_text.i_inst.rd);
+            auto& src1 = register_file.x.at(inst_text.i_inst.rs1);
             auto imm = imm_generate(inst, I_TYPE);
             return load_handler(dest, src1, imm, inst_text.i_inst.funct3,
                                 memory);
         }
         case OpcodeMap::STORE:
         {
-            auto& src1 = register_file.x[inst_text.s_inst.rs1];
-            auto& src2 = register_file.x[inst_text.s_inst.rs2];
+            auto& src1 = register_file.x.at(inst_text.s_inst.rs1);
+            auto& src2 = register_file.x.at(inst_text.s_inst.rs2);
             auto imm = imm_generate(inst, S_TYPE);
             return store_handler(src1, src2, imm, inst_text.s_inst.funct3,
                                  memory);
         }
         case OpcodeMap::OP_IMM:
         {
-            auto& dest = register_file.x[inst_text.i_inst.rd];
-            auto& src1 = register_file.x[inst_text.i_inst.rs1];
+            auto& dest = register_file.x.at(inst_text.i_inst.rd);
+            auto& src1 = register_file.x.at(inst_text.i_inst.rs1);
             auto imm = imm_generate(inst, I_TYPE);
             return op_imm_handler(dest, src1, imm, inst_text.i_inst.funct3);
         }
         case OpcodeMap::OP:
         {
-            auto& dest = register_file.x[inst_text.r_inst.rd];
-            auto& src1 = register_file.x[inst_text.r_inst.rs1];
-            auto& src2 = register_file.x[inst_text.r_inst.rs2];
+            auto& dest = register_file.x.at(inst_text.r_inst.rd);
+            auto& src1 = register_file.x.at(inst_text.r_inst.rs1);
+            auto& src2 = register_file.x.at(inst_text.r_inst.rs2);
             return op_handler(dest, src1, src2, inst_text.r_inst.funct7,
                               inst_text.r_inst.funct3);
         }
@@ -338,7 +384,7 @@ void EmuCore::single_instruction_impl()
 
 word_t EmuCore::debug_get_reg_val_impl(int reg_num)
 {
-    return register_file.x[reg_num];
+    return register_file.x.at(reg_num);
 }
 
 word_t EmuCore::debug_get_pc_impl() { return pc; }
