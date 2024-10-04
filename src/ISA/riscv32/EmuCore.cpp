@@ -184,18 +184,18 @@ std::function<void()> op_imm_handler(word_t& dest, word_t& src1, word_t imm,
         case SLLI:
             return [&dest, &src1, imm]() { dest = src1 << imm; };
         case SRLIorSRAI:
-            if (imm & 0b0100000)
+            if (imm & 0b0100000)  // SRAI
                 return [&dest, &src1, imm]()
                 { dest = static_cast<sword_t>(src1) >> imm; };
-            else
+            else  // SRLI
                 return [&dest, &src1, imm]() { dest = src1 >> imm; };
         default:
             throw invalid_instruction();
     }
 }
 
-std::function<void()> op_handler(word_t& dest, word_t& src1, word_t& src2,
-                                 word_t func7, word_t func3)
+std::function<void()> RV32I_OP_handler(word_t& dest, word_t& src1, word_t& src2,
+                                       word_t func3, word_t func7)
 {
     enum OpFunc3
     {
@@ -206,7 +206,7 @@ std::function<void()> op_handler(word_t& dest, word_t& src1, word_t& src2,
         XOR = 0b100,
         SRLorSRA = 0b101,
         OR = 0b110,
-        AND = 0b111
+        AND = 0b111,
     };
     switch (func3)
     {
@@ -234,6 +234,112 @@ std::function<void()> op_handler(word_t& dest, word_t& src1, word_t& src2,
             return [&dest, &src1, &src2]() { dest = src1 | src2; };
         case AND:
             return [&dest, &src1, &src2]() { dest = src1 & src2; };
+        default:
+            throw invalid_instruction();
+    }
+}
+
+std::function<void()> RV32M_OP_handler(word_t& dest, word_t& src1, word_t& src2,
+                                       word_t func3)
+{
+    enum OpFunc3
+    {
+        MUL = 0b000,
+        MULH = 0b001,
+        MULHSU = 0b010,
+        MULHU = 0b011,
+        DIV = 0b100,
+        DIVU = 0b101,
+        REM = 0b110,
+        REMU = 0b111,
+    };
+    switch (func3)
+    {
+        case MUL:
+            return [&dest, &src1, &src2]()
+            {
+                int32_t src1_val = src1;
+                int32_t src2_val = src2;
+                dest = static_cast<sword_t>(src1_val) *
+                       static_cast<sword_t>(src2_val);
+            };
+        case MULH:
+            return [&dest, &src1, &src2]()
+            {
+                int32_t src1_val = src1;
+                int32_t src2_val = src2;
+                int64_t res = static_cast<int64_t>(src1_val) *
+                              static_cast<int64_t>(src2_val);
+                dest = res >> 32;
+            };
+        case MULHSU:
+            return [&dest, &src1, &src2]()
+            {
+                int32_t src1_val = src1;
+                uint32_t src2_val = src2;
+                int64_t res = static_cast<int64_t>(src1_val) *
+                              static_cast<int64_t>(src2_val);
+                dest = res >> 32;
+            };
+        case MULHU:
+            return [&dest, &src1, &src2]()
+            {
+                uint32_t src1_val = src1;
+                uint32_t src2_val = src2;
+                uint64_t res = static_cast<uint64_t>(src1_val) *
+                               static_cast<uint64_t>(src2_val);
+                dest = res >> 32;
+            };
+        case DIV:
+            return [&dest, &src1, &src2]()
+            {
+                int32_t src1_val = src1;
+                int32_t src2_val = src2;
+                dest = src1_val / src2_val;
+            };
+        case DIVU:
+            return [&dest, &src1, &src2]()
+            {
+                uint32_t src1_val = src1;
+                uint32_t src2_val = src2;
+                dest = src1_val / src2_val;
+            };
+        case REM:
+            return [&dest, &src1, &src2]()
+            {
+                int32_t src1_val = src1;
+                int32_t src2_val = src2;
+                dest = src1_val % src2_val;
+            };
+        case REMU:
+            return [&dest, &src1, &src2]()
+            {
+                uint32_t src1_val = src1;
+                uint32_t src2_val = src2;
+                dest = src1_val % src2_val;
+            };
+        default:
+            throw invalid_instruction();
+    }
+}
+
+std::function<void()> op_handler(word_t& dest, word_t& src1, word_t& src2,
+                                 word_t func7, word_t func3)
+{
+    enum OpFunc7
+    {
+        RV32I = 0b0000000,
+        RV32ISub = 0b0100000,
+        RV32M = 0b0000001,
+    };
+    switch (func7)
+    {
+        case RV32M:
+            return RV32M_OP_handler(dest, src1, src2, func3);
+        case RV32I:
+            return RV32I_OP_handler(dest, src1, src2, func3, func7);
+        case RV32ISub:
+            return RV32I_OP_handler(dest, src1, src2, func3, func7);
         default:
             throw invalid_instruction();
     }
