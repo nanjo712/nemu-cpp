@@ -184,7 +184,7 @@ std::function<void()> op_imm_handler(word_t& dest, word_t& src1, word_t imm,
         case SLLI:
             return [&dest, &src1, imm]() { dest = src1 << imm; };
         case SRLIorSRAI:
-            if (imm & 0b0100000)  // SRAI
+            if (imm & 0b010000000000)  // SRAI
                 return [&dest, &src1, imm]()
                 { dest = static_cast<sword_t>(src1) >> imm; };
             else  // SRLI
