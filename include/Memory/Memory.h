@@ -14,7 +14,7 @@ class Memory
     word_t read(paddr_t addr, int len);
     void write(paddr_t addr, word_t data, int len);
 
-    void load_image(const std::vector<uint8_t>& image);
+    void load_image(std::vector<uint8_t>& image);
 
     Memory();
     ~Memory();

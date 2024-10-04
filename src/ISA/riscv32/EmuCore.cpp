@@ -2,7 +2,7 @@
 
 #include <spdlog/spdlog.h>
 
-#include <iostream>
+#include <print>
 
 #include "Exception/NEMUException.hpp"
 #include "ISA/riscv32/Common.hpp"
@@ -12,7 +12,7 @@
 namespace RISCV32
 {
 
-std::function<bool()> branch_handler(word_t src1, word_t src2, word_t func3)
+std::function<bool()> branch_handler(word_t& src1, word_t& src2, word_t func3)
 {
     enum BranchFunc3
     {
@@ -63,7 +63,8 @@ std::function<void()> load_handler(word_t& dest, word_t& src1, word_t imm,
             {
                 dest = sign_extend(memory.read(src1 + imm, 1), 8);
 #ifdef TRACE_MEMORY
-                spdlog::info("Load byte: 0x{:08x} -> x{}", src1 + imm, dest);
+                spdlog::info("Load byte: Addr 0x{:08x} -> Data 0x{:08x}",
+                             src1 + imm, dest);
 #endif
             };
         case LH:
@@ -71,8 +72,8 @@ std::function<void()> load_handler(word_t& dest, word_t& src1, word_t imm,
             {
                 dest = sign_extend(memory.read(src1 + imm, 2), 16);
 #ifdef TRACE_MEMORY
-                spdlog::info("Load half word: 0x{:08x} -> x{}", src1 + imm,
-                             dest);
+                spdlog::info("Load half word: Addr 0x{:08x} -> Data 0x{:08x}",
+                             src1 + imm, dest);
 #endif
             };
         case LW:
@@ -80,7 +81,8 @@ std::function<void()> load_handler(word_t& dest, word_t& src1, word_t imm,
             {
                 dest = memory.read(src1 + imm, 4);
 #ifdef TRACE_MEMORY
-                spdlog::info("Load word: 0x{:08x} -> x{}", src1 + imm, dest);
+                spdlog::info("Load word: Addr 0x{:08x} -> Data 0x{:08x}",
+                             src1 + imm, dest);
 #endif
             };
         case LBU:
@@ -88,15 +90,16 @@ std::function<void()> load_handler(word_t& dest, word_t& src1, word_t imm,
             {
                 dest = memory.read(src1 + imm, 1);
 #ifdef TRACE_MEMORY
-                spdlog::info("Load unsigned byte: 0x{:08x} -> x{}", src1 + imm,
-                             dest);
+                spdlog::info(
+                    "Load unsigned byte: Addr 0x{:08x} -> Data 0x{:08x}",
+                    src1 + imm, dest);
 #endif
             };
         case LHU:
             return [&memory, &dest, &src1, imm]()
             {
 #ifdef TRACE_MEMORY
-                spdlog::info("Load unsigned half word: 0x{:08x} -> x{}",
+                spdlog::info("Load unsigned half word: Addr 0x{:08x} -> x{}",
                              src1 + imm, dest);
 #endif
                 dest = memory.read(src1 + imm, 2);
@@ -122,7 +125,8 @@ std::function<void()> store_handler(word_t& src1, word_t& src2, word_t imm,
             {
                 memory.write(src1 + imm, src2, 1);
 #ifdef TRACE_MEMORY
-                spdlog::info("Store byte: 0x{:08x} <- x{}", src1 + imm, src2);
+                spdlog::info("Store byte: Addr 0x{:08x} <- Data 0x{:08x}",
+                             src1 + imm, src2);
 #endif
             };
         case SH:
@@ -130,8 +134,8 @@ std::function<void()> store_handler(word_t& src1, word_t& src2, word_t imm,
             {
                 memory.write(src1 + imm, src2, 2);
 #ifdef TRACE_MEMORY
-                spdlog::info("Store half word: 0x{:08x} <- x{}", src1 + imm,
-                             src2);
+                spdlog::info("Store half word: Addr 0x{:08x} <- Data 0x{:08x}",
+                             src1 + imm, src2);
 #endif
             };
         case SW:
@@ -139,7 +143,8 @@ std::function<void()> store_handler(word_t& src1, word_t& src2, word_t imm,
             {
                 memory.write(src1 + imm, src2, 4);
 #ifdef TRACE_MEMORY
-                spdlog::info("Store word: 0x{:08x} <- x{}", src1 + imm, src2);
+                spdlog::info("Store word: Addr 0x{:08x} <- Data 0x{:08x}",
+                             src1 + imm, src2);
 #endif
             };
         default:
@@ -384,9 +389,10 @@ void EmuCore::single_instruction_impl()
     auto handler = decode(inst, next_pc);
     handler();
 #ifdef TRACE_INSTRUCTION
-    std::cout << disassemble(pc, (uint8_t*)&inst, sizeof(word_t)) << std::endl;
+    std::print("{}\n", disassemble(pc, (uint8_t*)&inst, sizeof(word_t)));
 #endif
     pc = next_pc;
+    register_file.x[0] = 0;
 }
 
 word_t EmuCore::debug_get_reg_val_impl(int reg_num)

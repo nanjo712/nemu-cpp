@@ -1,17 +1,14 @@
 #include <getopt.h>
 #include <spdlog/spdlog.h>
 
+#include <filesystem>
 #include <memory>
-#include <string>
 
 #include "Debugger/Debugger.hpp"
 #include "ISA/riscv32/EmuCore.hpp"
 #include "Memory/Memory.h"
 #include "Monitor/Monitor.hpp"
 
-std::string log_file;
-std::string diff_so_file;
-int difftest_port;
 bool is_batch_mode = false;
 bool is_diff = false;
 
@@ -24,6 +21,10 @@ class Nemu
     std::unique_ptr<Monitor<T>> monitor;
     std::unique_ptr<Debugger<T>> debugger;
 
+    std::filesystem::path elf_file;
+    std::filesystem::path log_file;
+    std::filesystem::path firmware_file;
+
    public:
     Nemu(int argc = 0, char* argv[] = nullptr)
     {
@@ -34,7 +35,7 @@ class Nemu
 
         memory = std::make_unique<Memory>();
         core = std::make_unique<T>(*memory);
-        monitor = std::make_unique<Monitor<T>>(*core, *memory);
+        monitor = std::make_unique<Monitor<T>>(*core, *memory, firmware_file);
         debugger = std::make_unique<Debugger<T>>(*monitor);
     }
     ~Nemu() { spdlog::info("Exit NEMU"); }
@@ -62,20 +63,21 @@ class Nemu
                     is_batch_mode = true;
                     break;
                 case 'p':
-                    sscanf(optarg, "%d", &difftest_port);
+                    // sscanf(optarg, "%d", &difftest_port);
                     break;
                 case 'l':
-                    log_file = optarg;
+                    // log_file = optarg;
                     break;
                 case 'd':
-                    diff_so_file = optarg;
+                    // diff_so_file = optarg;
                     break;
                 case 'e':
-                    // Monitor::elf_file = optarg;
                     break;
                 case 1:
-                    // ISA_Wrapper::img_file = optarg;
+                {
+                    firmware_file = optarg;
                     return 0;
+                }
                 default:
                     print_usage();
             }

@@ -13,7 +13,6 @@ set(NEMU_CPP_HOME ${CMAKE_CURRENT_SOURCE_DIR})
 message(STATUS "NEMU_CPP_HOME: ${NEMU_CPP_HOME}")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${NEMU_CPP_HOME}/cmake/Modules")
 
-find_package(fmt REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(Readline REQUIRED)
 find_package(LLVM REQUIRED CONFIG)

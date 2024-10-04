@@ -20,4 +20,7 @@ class Core
     void single_instruction();
 };
 
+template <typename T>
+concept CoreType = std::is_base_of<Core<T>, T>::value;
+
 #endif  // CORE_DECL_H_

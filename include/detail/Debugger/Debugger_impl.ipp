@@ -1,18 +1,17 @@
 #ifndef DEBUGGER_IMPL_HPP_
 #define DEBUGGER_IMPL_HPP_
 
-#include <fmt/core.h>
-#include <readline/history.h>
-#include <readline/readline.h>
 #include <sys/types.h>
 
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
-#include <iostream>
+#include <print>
 
 #include "Exception/NEMUException.hpp"
 #include "detail/Debugger/Debugger_decl.hpp"
+#include "readline/history.h"
+#include "readline/readline.h"
 
 struct Rule
 {
@@ -273,9 +272,8 @@ int Debugger<T>::cmd_info()
     {
         for (auto wp : watchpoint_used_list)
         {
-            std::cout << fmt::format("Watchpoint {}: {} = {}\n", wp,
-                                     watchpoint_pool[wp].expr,
-                                     watchpoint_pool[wp].value);
+            std::print("Watchpoint {}: {} = {}\n", wp, watchpoint_pool[wp].expr,
+                       watchpoint_pool[wp].value);
         }
     }
     else
@@ -580,6 +578,7 @@ uint32_t Debugger<T>::evaluate(std::string expr, bool& success)
         success = false;
         return 0;
     }
+    success = true;
     return eval(0, tokens.size() - 1, tokens);
 }
 

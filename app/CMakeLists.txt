@@ -9,7 +9,7 @@ target_link_libraries(
     Memory
     ISA_RISCV32
     ${Readline_LIBRARY}
-    spdlog
+    spdlog::spdlog_header_only
 )
 target_include_directories(
     ${PROJECT_NAME}

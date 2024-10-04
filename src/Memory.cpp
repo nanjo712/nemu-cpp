@@ -3,19 +3,19 @@
 #include <spdlog/spdlog.h>
 
 #include <cassert>
-#include <random>
+// #include <random>
 
 Memory::Memory()
     : physicalMemory(std::make_unique<std::array<uint8_t, MEMORY_SIZE>>())
 {
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(0, 255);
-    for (int i = 0; i < MEMORY_SIZE; i++)
-    {
-        physicalMemory->at(i) = dis(gen);
-    }
-    spdlog::info("Memory initialized with random data.");
+    // std::random_device rd;
+    // std::mt19937 gen(rd());
+    // std::uniform_int_distribution<> dis(0, 255);
+    // for (int i = 0; i < MEMORY_SIZE; i++)
+    // {
+    //     physicalMemory->at(i) = dis(gen);
+    // }
+    // spdlog::info("Memory initialized with random data.");
     spdlog::info("Memory size: {} bytes", MEMORY_SIZE);
     spdlog::info("Memory base: 0x{:08x}", MEMORY_BASE);
     spdlog::info("Memory upper bound: 0x{:08x}", upper_bound);
@@ -71,8 +71,14 @@ void Memory::write(paddr_t addr, word_t data, int len)
     }
 }
 
-void Memory::load_image(const std::vector<uint8_t>& image)
+void Memory::load_image(std::vector<uint8_t>& image)
 {
+    if (image.size() > MEMORY_SIZE)
+    {
+        spdlog::error("Image size exceeds memory size.");
+        assert(false);
+    }
+
     for (size_t i = 0; i < image.size(); i++)
     {
         physicalMemory->at(i) = image[i];

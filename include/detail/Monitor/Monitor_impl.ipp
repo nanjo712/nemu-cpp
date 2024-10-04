@@ -3,40 +3,52 @@
 
 #include <spdlog/spdlog.h>
 
+#include <cstdint>
 #include <exception>
-#include <iostream>
+#include <fstream>
+#include <print>
 #include <string_view>
 #include <vector>
 
 #include "Exception/NEMUException.hpp"
 #include "Monitor_decl.hpp"
 
-template <typename T>
-bool Monitor<T>::using_custom_firmware = false;
-
-template <typename T>
-Monitor<T>::Monitor(Core<T> &core, Memory &memory) : core(core), memory(memory)
+template <CoreType T>
+Monitor<T>::Monitor(Core<T> &core, Memory &memory,
+                    std::filesystem::path custom_firmware_file)
+    : core(core), memory(memory)
 {
     state = State::STOP;
     inst_count = 0;
     timer = std::chrono::nanoseconds(0);
 
-    std::vector<uint8_t> firmware;
-    if (!using_custom_firmware)
+    if (std::filesystem::exists(custom_firmware_file))
     {
-        spdlog::info("Using built-in firmware.");
+        spdlog::info("Loading custom firmware: {}",
+                     custom_firmware_file.string());
+        std::ifstream file(custom_firmware_file, std::ios::binary);
+        auto firmware(
+            std::vector<uint8_t>((std::istreambuf_iterator<char>(file)),
+                                 std::istreambuf_iterator<char>()));
+        memory.load_image(firmware);
     }
     else
     {
+        spdlog::info("Loading built-in firmware");
+        auto firmware(std::vector<uint8_t>(
+            reinterpret_cast<const uint8_t *>(T::builtin_firmware.data()),
+            reinterpret_cast<const uint8_t *>(T::builtin_firmware.data()) +
+                sizeof(T::builtin_firmware)));
+        memory.load_image(firmware);
     }
 }
 
-template <typename T>
+template <CoreType T>
 Monitor<T>::~Monitor()
 {
 }
 
-template <typename T>
+template <CoreType T>
 void Monitor<T>::invalid_inst_handler(word_t pc)
 {
     word_t inst = memory.read(pc, sizeof(word_t));
@@ -46,7 +58,7 @@ void Monitor<T>::invalid_inst_handler(word_t pc)
     state = State::ABORT;
 }
 
-template <typename T>
+template <CoreType T>
 void Monitor<T>::ebreak_handler(word_t pc)
 {
     halt_pc = pc;
@@ -55,7 +67,7 @@ void Monitor<T>::ebreak_handler(word_t pc)
     state = halt_ret == 0 ? State::END : State::ABORT;
 }
 
-template <typename T>
+template <CoreType T>
 void Monitor<T>::statistics()
 {
     spdlog::info("Execution time: {} ns", timer.count());
@@ -68,7 +80,7 @@ void Monitor<T>::statistics()
                  halt_ret);
 }
 
-template <typename T>
+template <CoreType T>
 void Monitor<T>::execute(uint64_t n)
 {
     if (state == State::STOP)
@@ -117,24 +129,23 @@ void Monitor<T>::execute(uint64_t n)
         statistics();
 }
 
-template <typename T>
+template <CoreType T>
 void Monitor<T>::quit()
 {
-    state = State::QUIT;
+    if (state == State::STOP) state = State::QUIT;
 }
 
-template <typename T>
+template <CoreType T>
 void Monitor<T>::print_registers()
 {
     for (int i = 0; i < 32; i++)
     {
-        std::cout << spdlog::fmt_lib::format("x{0}: {1:x}\n", i,
-                                             core.debug_get_reg_val(i));
+        std::print("x{0}: {1:x}\n", i, core.debug_get_reg_val(i));
     }
-    std::cout << spdlog::fmt_lib::format("pc: {0:x}\n", core.debug_get_pc());
+    std::print("pc: {0:x}\n", core.debug_get_pc());
 }
 
-template <typename T>
+template <CoreType T>
 auto Monitor<T>::get_reg_val(std::string_view reg_name)
 {
     if (reg_name == "pc")
@@ -146,13 +157,13 @@ auto Monitor<T>::get_reg_val(std::string_view reg_name)
     return core.debug_get_reg_val(reg_num);
 }
 
-template <typename T>
+template <CoreType T>
 auto Monitor<T>::mem_read(word_t addr, size_t len)
 {
     return memory.read(addr, len);
 }
 
-template <typename T>
+template <CoreType T>
 bool Monitor<T>::is_bad_status()
 {
     return state == State::ABORT;
