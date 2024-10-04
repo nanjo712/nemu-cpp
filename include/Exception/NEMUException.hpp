@@ -18,4 +18,9 @@ class program_halt : public std::exception
     const char* what() const noexcept override { return "Program halt"; }
 };
 
+class invalid_address : public std::exception
+{
+    const char* what() const noexcept override { return "Invalid address"; }
+};
+
 #endif  // NEMU_EXCEPTION_H_

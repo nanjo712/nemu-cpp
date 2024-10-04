@@ -21,16 +21,16 @@ Memory::Memory()
     spdlog::info("Memory upper bound: 0x{:08x}", upper_bound);
 }
 
-constexpr bool Memory::inRange(paddr_t addr) const
+constexpr bool Memory::in_range(paddr_t addr) const
 {
     return addr >= lower_bound && addr < upper_bound;
 }
 
 Memory::~Memory() { /*spdlog::info("Memory destroyed.");*/ }
 
-uint8_t* Memory::getHostMemAddr(paddr_t paddr)
+uint8_t* Memory::get_host_memory_addr(paddr_t paddr)
 {
-    if (!inRange(paddr))
+    if (!in_range(paddr))
     {
         spdlog::error("Physical address 0x{:08x} out of range.", paddr);
         assert(false);
@@ -47,7 +47,7 @@ word_t Memory::read(paddr_t addr, int len)
     }
 
     word_t data = 0;
-    auto hostMemAddr = getHostMemAddr(addr);
+    auto hostMemAddr = get_host_memory_addr(addr);
     for (int i = 0; i < len; i++)
     {
         data |= hostMemAddr[i] << (i * 8);
@@ -63,10 +63,18 @@ void Memory::write(paddr_t addr, word_t data, int len)
         assert(false);
     }
 
-    auto hostMemAddr = getHostMemAddr(addr);
+    auto hostMemAddr = get_host_memory_addr(addr);
 
     for (int i = 0; i < len; i++)
     {
         hostMemAddr[i] = (data >> (i * 8)) & 0xff;
+    }
+}
+
+void Memory::load_image(const std::vector<uint8_t>& image)
+{
+    for (size_t i = 0; i < image.size(); i++)
+    {
+        physicalMemory->at(i) = image[i];
     }
 }

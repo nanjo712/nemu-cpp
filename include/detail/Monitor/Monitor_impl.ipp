@@ -6,6 +6,7 @@
 #include <exception>
 #include <iostream>
 #include <string_view>
+#include <vector>
 
 #include "Exception/NEMUException.hpp"
 #include "Monitor_decl.hpp"
@@ -20,14 +21,13 @@ Monitor<T>::Monitor(Core<T> &core, Memory &memory) : core(core), memory(memory)
     inst_count = 0;
     timer = std::chrono::nanoseconds(0);
 
+    std::vector<uint8_t> firmware;
     if (!using_custom_firmware)
     {
-        auto &firmware = T::builtin_firmware;
-        for (size_t i = 0; i < firmware.size(); i++)
-        {
-            memory.write(MEMORY_BASE + i * sizeof(word_t), firmware[i],
-                         sizeof(word_t));
-        }
+        spdlog::info("Using built-in firmware.");
+    }
+    else
+    {
     }
 }
 
