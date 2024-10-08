@@ -13,7 +13,8 @@ class RingBuffer
     RingBuffer() : head(0), tail(0) {}
 
     template <typename Ty>
-    std::enable_if<std::is_same_v<T, Ty>, void> push(Ty&& item)
+        requires std::is_same_v<T, Ty>
+    void push(Ty&& item)
     {
         buffer[head] = std::forward<Ty>(item);
         head = (head + 1) % N;
@@ -21,7 +22,6 @@ class RingBuffer
         {
             tail = (tail + 1) % N;
         }
-        return std::enable_if<std::is_same_v<T, Ty>, void>();
     }
 
     T pop()

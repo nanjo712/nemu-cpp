@@ -9,6 +9,7 @@
 #include <print>
 
 #include "Exception/NEMUException.hpp"
+#include "Utils/Disasm.h"
 #include "detail/Debugger/Debugger_decl.hpp"
 #include "readline/history.h"
 #include "readline/readline.h"
@@ -292,6 +293,11 @@ int Debugger<T>::cmd_si()
         printf("Command 'si' does not accept any arguments\n");
         return 1;
     }
+#ifdef TRACE_INSTRUCTION
+    word_t pc = monitor.get_reg_val("pc");
+    word_t inst = monitor.mem_read(pc, 4);
+    std::print("{}\n", disassemble(pc, (uint8_t*)&inst, sizeof(word_t)));
+#endif
     execute(1);
     return 0;
 }

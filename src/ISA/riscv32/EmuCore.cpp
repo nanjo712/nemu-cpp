@@ -494,9 +494,6 @@ void EmuCore::single_instruction_impl()
     auto next_pc = pc + 4;
     auto handler = decode(inst, next_pc);
     handler();
-#ifdef TRACE_INSTRUCTION
-    std::print("{}\n", disassemble(pc, (uint8_t*)&inst, sizeof(word_t)));
-#endif
     pc = next_pc;
     register_file.x[0] = 0;
 }
