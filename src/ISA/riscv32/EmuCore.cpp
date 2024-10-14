@@ -98,11 +98,11 @@ std::function<void()> load_handler(word_t& dest, word_t& src1, word_t imm,
         case LHU:
             return [&memory, &dest, &src1, imm]()
             {
+                dest = memory.read(src1 + imm, 2);
 #ifdef TRACE_MEMORY
                 spdlog::info("Load unsigned half word: Addr 0x{:08x} -> x{}",
                              src1 + imm, dest);
 #endif
-                dest = memory.read(src1 + imm, 2);
             };
         default:
             throw invalid_instruction();
