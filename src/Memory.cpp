@@ -3,7 +3,6 @@
 #include <spdlog/spdlog.h>
 
 #include <cassert>
-// #include <random>
 
 Memory::Memory()
     : physicalMemory(std::make_unique<std::array<uint8_t, MEMORY_SIZE>>())

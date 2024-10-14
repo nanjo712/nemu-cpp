@@ -126,7 +126,10 @@ void Monitor<T>::execute(uint64_t n)
     if (state == State::RUNNING)
         state = State::STOP;
     else if (state == State::END || state == State::ABORT)
+    {
         statistics();
+        throw program_halt();
+    }
 }
 
 template <CoreType T>

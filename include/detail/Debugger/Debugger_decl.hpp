@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "Monitor/Monitor.hpp"
+#include "Utils/RingBuffer.h"
 
 enum TOKEN_TYPE
 {
@@ -47,6 +48,8 @@ class Debugger
 
    private:
     Monitor<T>& monitor;
+    RingBuffer<std::string, 32> instruction_buffer;
+    std::string_view latest_instrution;
 
     struct Command
     {

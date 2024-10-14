@@ -177,7 +177,7 @@ Debugger<T>::Debugger(Monitor<T>& monitor)
           {"c", "Continue", &Debugger<T>::cmd_c},
           {"info", "Print information: r for register; w for watchpoint",
            &Debugger<T>::cmd_info},
-          {"si", "Step into", &Debugger<T>::cmd_si},
+          {"si", "Single instruction", &Debugger<T>::cmd_si},
           {"x", "Examine memory", &Debugger<T>::cmd_x},
           {"p", "Print expression", &Debugger<T>::cmd_p},
           {"q", "Quit", &Debugger<T>::cmd_q},
@@ -230,6 +230,10 @@ void Debugger<T>::execute(uint64_t step)
 #ifdef CHECK_WATCHPOINT
         while (step--)
         {
+            word_t pc = monitor.get_reg_val("pc");
+            word_t inst = monitor.mem_read(pc, 4);
+            latest_instrution = instruction_buffer.push(
+                disassemble(pc, (uint8_t*)&inst, sizeof(typename T::word_t)));
             monitor.execute(1);
             if (check_watchpoint()) break;
         }
@@ -293,12 +297,11 @@ int Debugger<T>::cmd_si()
         printf("Command 'si' does not accept any arguments\n");
         return 1;
     }
-#ifdef TRACE_INSTRUCTION
-    word_t pc = monitor.get_reg_val("pc");
-    word_t inst = monitor.mem_read(pc, 4);
-    std::print("{}\n", disassemble(pc, (uint8_t*)&inst, sizeof(word_t)));
-#endif
     execute(1);
+#ifdef TRACE_INSTRUCTION
+    std::print("Current instruction: \n");
+    std::print("{}\n", latest_instrution);
+#endif
     return 0;
 }
 
@@ -480,25 +483,30 @@ int Debugger<T>::run(bool is_batch_mode)
     if (is_batch_mode)
     {
         execute(-1);
-        return monitor.is_bad_status();
     }
-    try
-    {
-        while (true)
+    else
+        try
         {
-            char* line = rl_gets();
-            if (line == nullptr)
+            while (true)
             {
-                break;
+                char* line = rl_gets();
+                if (line == nullptr)
+                {
+                    break;
+                }
+                if (cmd_handler(line) < 0) break;
             }
-            if (cmd_handler(line) < 0) break;
         }
-    }
-    catch (program_halt& e)
+        catch (program_halt& e)
+        {
+            spdlog::info("Program halted");
+        }
+    bool is_bad_status = monitor.is_bad_status();
+    if (is_bad_status)
     {
-        spdlog::info("Program halted");
+        instruction_buffer.print();
     }
-    return monitor.is_bad_status();
+    return is_bad_status;
 }
 
 template <typename T>
