@@ -7,10 +7,12 @@
 #include <cstdint>
 #include <cstdio>
 #include <list>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "Monitor/Monitor.hpp"
+#include "Utils/ElfParser.h"
 #include "Utils/RingBuffer.h"
 
 enum TOKEN_TYPE
@@ -41,7 +43,7 @@ template <typename T>
 class Debugger
 {
    public:
-    Debugger(Monitor<T>& monitor);
+    Debugger(Monitor<T>& monitor, std::filesystem::path elf_file = "");
     ~Debugger();
 
     int run(bool is_batch_mode = false);
@@ -58,6 +60,7 @@ class Debugger
         int (Debugger::*func)();
     };
     std::vector<Command> commands;
+
     struct WatchPoint
     {
         std::string expr;
@@ -66,6 +69,8 @@ class Debugger
     std::array<WatchPoint, 32> watchpoint_pool;
     std::list<int> watchpoint_free_list;
     std::list<int> watchpoint_used_list;
+
+    std::unique_ptr<SymbolTable> symbols;
 
     int cmd_c();
     int cmd_info();

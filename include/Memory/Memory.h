@@ -11,9 +11,13 @@ class Memory
 {
    public:
     using paddr_t = decltype(MEMORY_BASE + MEMORY_SIZE);
-    word_t read(paddr_t addr, int len);
-    void write(paddr_t addr, word_t data, int len);
+    using vaddr_t = paddr_t;
 
+    word_t inst_fetch(vaddr_t addr, int len);
+    word_t vread(vaddr_t addr, int len);
+    void vwrite(vaddr_t addr, word_t data, int len);
+
+    word_t debug_vread(vaddr_t addr, int len);
     void load_image(std::vector<uint8_t>& image);
 
     Memory();
@@ -26,6 +30,9 @@ class Memory
 
     std::unique_ptr<std::array<uint8_t, MEMORY_SIZE>> physicalMemory;
     uint8_t* get_host_memory_addr(paddr_t paddr);
+
+    word_t pread(paddr_t addr, int len);
+    void pwrite(paddr_t addr, word_t data, int len);
 };
 
 #endif  // MEMORY_H_

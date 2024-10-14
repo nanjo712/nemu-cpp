@@ -51,7 +51,7 @@ Monitor<T>::~Monitor()
 template <CoreType T>
 void Monitor<T>::invalid_inst_handler(word_t pc)
 {
-    word_t inst = memory.read(pc, sizeof(word_t));
+    word_t inst = memory.inst_fetch(pc, sizeof(word_t));
     spdlog::error("Invalid instruction at PC = {0:x}", pc);
     spdlog::error("Instrution: \n BIN:{0:b}\n HEX:{0:x}", inst);
     halt_pc = pc;
@@ -163,7 +163,7 @@ auto Monitor<T>::get_reg_val(std::string_view reg_name)
 template <CoreType T>
 auto Monitor<T>::mem_read(word_t addr, size_t len)
 {
-    return memory.read(addr, len);
+    return memory.debug_vread(addr, len);
 }
 
 template <CoreType T>

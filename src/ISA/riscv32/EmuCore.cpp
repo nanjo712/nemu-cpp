@@ -60,50 +60,19 @@ std::function<void()> load_handler(word_t& dest, word_t& src1, word_t imm,
     {
         case LB:
             return [&memory, &dest, &src1, imm]()
-            {
-                dest = sign_extend(memory.read(src1 + imm, 1), 8);
-#ifdef TRACE_MEMORY
-                spdlog::info("Load byte: Addr 0x{:08x} -> Data 0x{:08x}",
-                             src1 + imm, dest);
-#endif
-            };
+            { dest = sign_extend(memory.vread(src1 + imm, 1), 8); };
         case LH:
             return [&memory, &dest, &src1, imm]()
-            {
-                dest = sign_extend(memory.read(src1 + imm, 2), 16);
-#ifdef TRACE_MEMORY
-                spdlog::info("Load half word: Addr 0x{:08x} -> Data 0x{:08x}",
-                             src1 + imm, dest);
-#endif
-            };
+            { dest = sign_extend(memory.vread(src1 + imm, 2), 16); };
         case LW:
             return [&memory, &dest, &src1, imm]()
-            {
-                dest = memory.read(src1 + imm, 4);
-#ifdef TRACE_MEMORY
-                spdlog::info("Load word: Addr 0x{:08x} -> Data 0x{:08x}",
-                             src1 + imm, dest);
-#endif
-            };
+            { dest = memory.vread(src1 + imm, 4); };
         case LBU:
             return [&memory, &dest, &src1, imm]()
-            {
-                dest = memory.read(src1 + imm, 1);
-#ifdef TRACE_MEMORY
-                spdlog::info(
-                    "Load unsigned byte: Addr 0x{:08x} -> Data 0x{:08x}",
-                    src1 + imm, dest);
-#endif
-            };
+            { dest = memory.vread(src1 + imm, 1); };
         case LHU:
             return [&memory, &dest, &src1, imm]()
-            {
-                dest = memory.read(src1 + imm, 2);
-#ifdef TRACE_MEMORY
-                spdlog::info("Load unsigned half word: Addr 0x{:08x} -> x{}",
-                             src1 + imm, dest);
-#endif
-            };
+            { dest = memory.vread(src1 + imm, 2); };
         default:
             throw invalid_instruction();
     }
@@ -122,31 +91,13 @@ std::function<void()> store_handler(word_t& src1, word_t& src2, word_t imm,
     {
         case SB:
             return [&memory, &src1, &src2, imm]()
-            {
-                memory.write(src1 + imm, src2, 1);
-#ifdef TRACE_MEMORY
-                spdlog::info("Store byte: Addr 0x{:08x} <- Data 0x{:08x}",
-                             src1 + imm, src2);
-#endif
-            };
+            { memory.vwrite(src1 + imm, src2, 1); };
         case SH:
             return [&memory, &src1, &src2, imm]()
-            {
-                memory.write(src1 + imm, src2, 2);
-#ifdef TRACE_MEMORY
-                spdlog::info("Store half word: Addr 0x{:08x} <- Data 0x{:08x}",
-                             src1 + imm, src2);
-#endif
-            };
+            { memory.vwrite(src1 + imm, src2, 2); };
         case SW:
             return [&memory, &src1, &src2, imm]()
-            {
-                memory.write(src1 + imm, src2, 4);
-#ifdef TRACE_MEMORY
-                spdlog::info("Store word: Addr 0x{:08x} <- Data 0x{:08x}",
-                             src1 + imm, src2);
-#endif
-            };
+            { memory.vwrite(src1 + imm, src2, 4); };
         default:
             throw invalid_instruction();
     }
@@ -490,7 +441,7 @@ void EmuCore::reset_impl()
 
 void EmuCore::single_instruction_impl()
 {
-    auto inst = memory.read(pc, 4);
+    auto inst = memory.inst_fetch(pc, 4);
     auto next_pc = pc + 4;
     auto handler = decode(inst, next_pc);
     handler();

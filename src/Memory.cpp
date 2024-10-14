@@ -37,7 +37,7 @@ uint8_t* Memory::get_host_memory_addr(paddr_t paddr)
     return &(physicalMemory->at(0)) + (paddr - lower_bound);
 }
 
-word_t Memory::read(paddr_t addr, int len)
+word_t Memory::pread(paddr_t addr, int len)
 {
     if (len != 1 && len != 2 && len != 4 && len != 8)
     {
@@ -54,7 +54,7 @@ word_t Memory::read(paddr_t addr, int len)
     return data;
 }
 
-void Memory::write(paddr_t addr, word_t data, int len)
+void Memory::pwrite(paddr_t addr, word_t data, int len)
 {
     if (len != 1 && len != 2 && len != 4 && len != 8)
     {
@@ -83,3 +83,24 @@ void Memory::load_image(std::vector<uint8_t>& image)
         physicalMemory->at(i) = image[i];
     }
 }
+
+word_t Memory::inst_fetch(vaddr_t addr, int len) { return pread(addr, len); }
+
+word_t Memory::vread(vaddr_t addr, int len)
+{
+    auto data = pread(addr, len);
+#ifdef TRACE_MEMORY
+    spdlog::info("Load {} bytes at 0x{:08x}. Data: 0x{:08x}", len, addr, data);
+#endif
+    return data;
+}
+
+void Memory::vwrite(vaddr_t addr, word_t data, int len)
+{
+#ifdef TRACE_MEMORY
+    spdlog::info("Store {} bytes at 0x{:08x}. Data: 0x{:08x}", len, addr, data);
+#endif
+    pwrite(addr, data, len);
+}
+
+word_t Memory::debug_vread(vaddr_t addr, int len) { return pread(addr, len); }

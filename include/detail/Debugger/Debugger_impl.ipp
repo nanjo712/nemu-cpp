@@ -6,10 +6,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <filesystem>
+#include <memory>
 #include <print>
 
 #include "Exception/NEMUException.hpp"
 #include "Utils/Disasm.h"
+#include "Utils/ElfParser.h"
 #include "detail/Debugger/Debugger_decl.hpp"
 #include "readline/history.h"
 #include "readline/readline.h"
@@ -171,7 +174,7 @@ static inline char* rl_gets()
 }
 
 template <typename T>
-Debugger<T>::Debugger(Monitor<T>& monitor)
+Debugger<T>::Debugger(Monitor<T>& monitor, std::filesystem::path elf_file)
     : monitor(monitor),
       commands({
           {"c", "Continue", &Debugger<T>::cmd_c},
@@ -190,6 +193,12 @@ Debugger<T>::Debugger(Monitor<T>& monitor)
     for (int i = 0; i < 32; i++)
     {
         watchpoint_free_list.push_back(i);
+    }
+
+    if (std::filesystem::exists(elf_file))
+    {
+        symbols =
+            std::make_unique<SymbolTable>(getFunctionSymbol(elf_file).value());
     }
 }
 
@@ -227,7 +236,6 @@ void Debugger<T>::execute(uint64_t step)
 {
     try
     {
-#ifdef CHECK_WATCHPOINT
         while (step--)
         {
             word_t pc = monitor.get_reg_val("pc");
@@ -235,11 +243,10 @@ void Debugger<T>::execute(uint64_t step)
             latest_instrution = instruction_buffer.push(
                 disassemble(pc, (uint8_t*)&inst, sizeof(typename T::word_t)));
             monitor.execute(1);
+#ifdef CHECK_WATCHPOINT
             if (check_watchpoint()) break;
-        }
-#else
-        monitor.execute(step);
 #endif
+        }
     }
     catch (program_halt& e)
     {

@@ -1,5 +1,3 @@
-#include "Utils/Elf_Parser.h"
-
 #include <elf.h>
 
 #include <cstring>
@@ -8,6 +6,8 @@
 #include <memory>
 #include <optional>
 #include <string>
+
+#include "Utils/ElfParser.h"
 
 std::optional<SymbolTable> getFunctionSymbol(const std::string &file_path)
 {
